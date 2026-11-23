@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Termo de Responsabilidade Patrimonial')}"></head>
+<body>
+
+<aside th:replace="~{fragments/layout :: sidebar('movimentacoes')}"></aside>
+
+<div class="app-main">
+    <header th:replace="~{fragments/layout :: topbar('Termo Oficial de Cautela')}"></header>
+
+    <main class="app-content" style="max-width: 880px;">
+        <div class="d-flex justify-content-between mb-3 no-print">
+            <a th:href="@{/movimentacoes}" class="btn-figma-outline">
+                <i class="bi bi-arrow-left"></i> Voltar
+            </a>
+            <button onclick="window.print()" class="btn-figma-primary">
+                <i class="bi bi-printer"></i> Imprimir Termo Oficial
+            </button>
+        </div>
+
+        <div class="figma-card p-4 p-md-5 bg-white">
+            <div class="text-center border-bottom pb-3 mb-4">
+                <div class="text-uppercase small text-muted fw-bold">Administração Pública &bull; Setor de Patrimônio e Almoxarifado</div>
+                <h1 class="h4 fw-bold mt-1 mb-1">TERMO DE CAUTELA E RESPONSABILIDADE PATRIMONIAL</h1>
+                <div class="fw-semibold text-primary" th:text="'Documento Nº ' + ${movimentacao.numeroTermo}">Documento Nº TC-2026-0001</div>
+            </div>
+
+            <h2 class="h6 text-uppercase fw-bold text-secondary mb-2">1. Identificação do Bem Patrimonial</h2>
+            <table class="table table-bordered table-sm mb-4">
+                <tr>
+                    <th class="bg-light" style="width: 30%;">Nº Tombamento</th>
+                    <td class="fw-bold" th:text="${movimentacao.equipamento.patrimonio}">PAT-2026-0001</td>
+                </tr>
+                <tr>
+                    <th class="bg-light">Descrição Técnica</th>
+                    <td th:text="${movimentacao.equipamento.nome}">Notebook</td>
+                </tr>
+                <tr>
+                    <th class="bg-light">Marca / Modelo / Série</th>
+                    <td th:text="${(movimentacao.equipamento.marca ?: '-') + ' / ' + (movimentacao.equipamento.modelo ?: '-') + ' / S/N: ' + (movimentacao.equipamento.numeroSerie ?: '-')}">Dell</td>
+                </tr>
+                <tr>
+                    <th class="bg-light">Estado de Conservação</th>
+                    <td th:text="${movimentacao.equipamento.estadoConservacao.descricao}">Bom</td>
+                </tr>
+            </table>
+
+            <h2 class="h6 text-uppercase fw-bold text-secondary mb-2">2. Setor Requisitante e Prazos</h2>
+            <table class="table table-bordered table-sm mb-4">
+                <tr>
+                    <th class="bg-light" style="width: 30%;">Setor / Unidade</th>
+                    <td th:text="${movimentacao.responsavel.nomeSetor}">Coordenação de TI</td>
+                </tr>
+                <tr>
+                    <th class="bg-light">Servidor Responsável</th>
+                    <td th:text="${movimentacao.responsavel.nome + (movimentacao.responsavel.matricula != null ? ' (Matrícula: ' + movimentacao.responsavel.matricula + ')' : '')}">Carlos</td>
+                </tr>
+                <tr>
+                    <th class="bg-light">Data da Retirada</th>
+                    <td th:text="${#temporals.format(movimentacao.dataRetirada, 'dd/MM/yyyy')}">01/01/2026</td>
+                </tr>
+                <tr>
+                    <th class="bg-light">Previsão de Devolução</th>
+                    <td class="fw-bold" th:text="${#temporals.format(movimentacao.dataPrevistaDevolucao, 'dd/MM/yyyy')}">08/01/2026</td>
+                </tr>
+                <tr>
+                    <th class="bg-light">Data Efetiva Devolução</th>
+                    <td th:text="${movimentacao.dataDevolucao != null ? #temporals.format(movimentacao.dataDevolucao, 'dd/MM/yyyy') : 'Pendente (Em posse do setor)'}">Pendente</td>
+                </tr>
+                <tr th:if="${movimentacao.observacao != null and !movimentacao.observacao.isBlank()}">
+                    <th class="bg-light">Observações</th>
+                    <td th:text="${movimentacao.observacao}">Obs</td>
+                </tr>
+            </table>
+
+            <p class="small text-muted mt-3">
+                Declaro ter recebido o bem patrimonial acima especificado em perfeitas condições de uso e funcionamento,
+                assumindo integral responsabilidade por sua guarda, conservação e devolução no prazo estipulado,
+                nos termos das normas internas de controle patrimonial.
+            </p>
+
+            <div class="row text-center mt-5 pt-4">
+                <div class="col-6">
+                    <div class="border-top border-dark mx-3 pt-2 small">
+                        <strong th:text="${movimentacao.responsavel.nome}">Servidor Responsável</strong><br>
+                        <span class="text-muted" th:text="${movimentacao.responsavel.nomeSetor}">Setor Requisitante</span>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="border-top border-dark mx-3 pt-2 small">
+                        <strong>Setor de Patrimônio / Almoxarifado</strong><br>
+                        <span class="text-muted">Conferência e Liberação</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Visão geral')}"></head>
+<body>
+
+<aside th:replace="~{fragments/layout :: sidebar('inicio')}"></aside>
+
+<div class="app-main">
+    <header th:replace="~{fragments/layout :: topbar('Visão geral')}"></header>
+
+    <main class="app-content">
+        <div th:replace="~{fragments/layout :: alertas}"></div>
+
+        <!-- Cabecalho da Pagina -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <div>
+                <div class="eyebrow-label">PAINEL DE CONTROLE</div>
+                <h1 class="page-title">Visão geral</h1>
+                <p class="page-subtitle">Acompanhe a situação dos bens e movimentações do órgão.</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a th:href="@{/equipamentos/novo}" class="btn-figma-outline">
+                    <i class="bi bi-plus-lg"></i> Novo patrimônio
+                </a>
+                <a th:href="@{/movimentacoes/nova}" class="btn-figma-primary">
+                    <i class="bi bi-arrow-left-right"></i> Registrar empréstimo
+                </a>
+            </div>
+        </div>
+
+        <!-- 4 Cartoes de Indicadores -->
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-xl-3">
+                <div class="figma-card p-3 p-lg-4 h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="text-secondary fw-medium" style="font-size: 0.875rem;">Total de patrimônios</span>
+                        <div class="d-flex align-items-center justify-content-center"
+                             style="width: 36px; height: 36px; border-radius: 8px; background-color: #EFF6FF; color: #2563EB;">
+                            <i class="bi bi-archive"></i>
+                        </div>
+                    </div>
+                    <div class="fw-bold text-dark mb-1" style="font-size: 1.95rem; line-height: 1.1;" th:text="${totalEquipamentos}">0</div>
+                    <div class="fw-semibold" style="font-size: 0.78rem; color: #10B981;">
+                        <span th:text="'+' + ${totalSetores} + ' setores cadastrados'">+4 setores</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+                <div class="figma-card p-3 p-lg-4 h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="text-secondary fw-medium" style="font-size: 0.875rem;">Equipamentos em uso</span>
+                        <div class="d-flex align-items-center justify-content-center"
+                             style="width: 36px; height: 36px; border-radius: 8px; background-color: #F3E8FF; color: #7C3AED;">
+                            <i class="bi bi-arrow-left-right"></i>
+                        </div>
+                    </div>
+                    <div class="fw-bold text-dark mb-1" style="font-size: 1.95rem; line-height: 1.1;" th:text="${totalEmprestados}">0</div>
+                    <div class="text-muted" style="font-size: 0.78rem;" th:text="${percentualEmUso} + ' do acervo'">0,0% do acervo</div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+                <div class="figma-card p-3 p-lg-4 h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="text-secondary fw-medium" style="font-size: 0.875rem;">Disponíveis</span>
+                        <div class="d-flex align-items-center justify-content-center"
+                             style="width: 36px; height: 36px; border-radius: 8px; background-color: #ECFDF5; color: #10B981;">
+                            <i class="bi bi-check-lg"></i>
+                        </div>
+                    </div>
+                    <div class="fw-bold text-dark mb-1" style="font-size: 1.95rem; line-height: 1.1;" th:text="${totalDisponiveis}">0</div>
+                    <div class="text-muted" style="font-size: 0.78rem;" th:text="${percentualDisponivel} + ' do acervo'">0,0% do acervo</div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+                <div class="figma-card p-3 p-lg-4 h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="text-secondary fw-medium" style="font-size: 0.875rem;">Devoluções em atraso</span>
+                        <div class="d-flex align-items-center justify-content-center"
+                             style="width: 36px; height: 36px; border-radius: 8px; background-color: #FEF2F2; color: #EF4444;">
+                            <i class="bi bi-clock"></i>
+                        </div>
+                    </div>
+                    <div class="fw-bold text-dark mb-1" style="font-size: 1.95rem; line-height: 1.1;" th:text="${totalAtrasadas}">0</div>
+                    <div class="fw-semibold" style="font-size: 0.78rem; color: #EF4444;"
+                         th:text="${totalAtrasadas > 0} ? 'Prazo vencido nos setores' : 'Nenhuma pendência vencida'">Nenhuma pendência</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid Principal: Esquerda (Movimentacoes recentes) + Direita (Proximas devolucoes + Inventario pendente) -->
+        <div class="row g-4">
+            <!-- Coluna Esquerda -->
+            <div class="col-lg-8">
+                <div class="figma-card h-100 d-flex flex-column">
+                    <div class="p-4 pb-3 d-flex justify-content-between align-items-start">
+                        <div>
+                            <h2 class="h6 fw-bold text-dark mb-1">Movimentações recentes</h2>
+                            <p class="text-muted small mb-0">Últimos empréstimos e situação dos equipamentos</p>
+                        </div>
+                        <a th:href="@{/movimentacoes}" class="text-decoration-none fw-semibold small" style="color: #2563EB;">
+                            Ver todos <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </div>
+
+                    <div class="px-4 pb-3 d-flex flex-wrap gap-2">
+                        <div class="position-relative flex-grow-1">
+                            <i class="bi bi-search position-absolute text-muted" style="left: 12px; top: 50%; transform: translateY(-50%); font-size: 0.85rem;"></i>
+                            <input type="text" id="buscaDashboard" class="form-control search-input-figma"
+                                   placeholder="Buscar por patrimônio, equipamento ou setor...">
+                        </div>
+                        <select id="filtroStatusDashboard" class="form-select" style="width: auto; min-width: 150px; border-radius: 8px; font-size: 0.85rem; border-color: #E2E8F0;">
+                            <option value="TODOS">Todos</option>
+                            <option value="EM_CAUTELA">Em Cautela</option>
+                            <option value="ATRASADO">Atrasados</option>
+                            <option value="DEVOLVIDO">Devolvidos</option>
+                        </select>
+                    </div>
+
+                    <div class="table-responsive flex-grow-1">
+                        <table class="table table-figma mb-0" id="tabelaDashboard">
+                            <thead>
+                            <tr>
+                                <th>PATRIMÔNIO / EQUIPAMENTO</th>
+                                <th>SETOR RESPONSÁVEL</th>
+                                <th>RETIRADA</th>
+                                <th>DEVOLUÇÃO</th>
+                                <th class="text-end">SITUAÇÃO</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:if="${#lists.isEmpty(movimentacoesRecentes)}">
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    Nenhuma movimentação registrada até o momento.
+                                </td>
+                            </tr>
+                            <tr th:each="mov : ${movimentacoesRecentes}"
+                                th:attr="data-status=${!mov.ativa ? 'DEVOLVIDO' : (mov.atrasada ? 'ATRASADO' : 'EM_CAUTELA')}">
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="item-icon-box">
+                                            <i class="bi bi-pc-display"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold text-dark" th:text="${mov.equipamento.nome}">Notebook Dell</div>
+                                            <div class="text-muted" style="font-size: 0.76rem;"
+                                                 th:text="${mov.equipamento.patrimonio + ' • ' + mov.equipamento.categoria.nome}">PAT-2026-0001 • Informática</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="fw-medium text-dark" th:text="${mov.responsavel.nomeSetor}">Secretaria</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;" th:text="${mov.responsavel.nome}">Servidor</div>
+                                </td>
+                                <td class="text-secondary" th:text="${#temporals.format(mov.dataRetirada, 'dd/MM/yyyy')}">12/06/2026</td>
+                                <td class="text-secondary"
+                                    th:text="${mov.dataDevolucao != null ? #temporals.format(mov.dataDevolucao, 'dd/MM/yyyy') : #temporals.format(mov.dataPrevistaDevolucao, 'dd/MM/yyyy')}">20/06/2026</td>
+                                <td class="text-end text-nowrap">
+                                    <span th:if="${!mov.ativa}" class="badge rounded-pill bg-success-subtle text-success fw-semibold px-2 py-1">Devolvido</span>
+                                    <span th:if="${mov.atrasada}" class="badge rounded-pill bg-danger-subtle text-danger fw-semibold px-2 py-1">Atrasado</span>
+                                    <span th:if="${mov.ativa and !mov.atrasada}" class="badge rounded-pill bg-primary-subtle text-primary fw-semibold px-2 py-1">Em Cautela</span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coluna Direita: Proximas devolucoes + Card Escuro Inventario Pendente (Igual ao print) -->
+            <div class="col-lg-4 d-flex flex-column gap-4">
+                <!-- Card 1: Proximas devolucoes -->
+                <div class="figma-card p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h2 class="h6 fw-bold text-dark mb-1">Próximas devoluções</h2>
+                            <p class="text-muted small mb-0">Previsão para os próximos dias</p>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-center"
+                             style="width: 34px; height: 34px; border-radius: 8px; background-color: #EFF6FF; color: #2563EB;">
+                            <i class="bi bi-calendar-event"></i>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div th:if="${#lists.isEmpty(proximasDevolucoes)}" class="text-center py-4 text-muted small">
+                            Nenhuma devolução pendente na agenda.
+                        </div>
+
+                        <div th:each="dev : ${proximasDevolucoes}"
+                             class="d-flex align-items-center justify-content-between py-2 border-bottom border-light">
+                            <div class="d-flex align-items-center gap-3 min-w-0">
+                                <div class="text-center flex-shrink-0 px-2 py-1"
+                                     th:style="${dev.atrasada} ? 'width: 48px; border-radius: 10px; background-color: #FEF2F2; color: #DC2626;' : 'width: 48px; border-radius: 10px; background-color: #EFF6FF; color: #2563EB;'">
+                                    <div class="fw-bold" style="font-size: 0.95rem; line-height: 1.1;"
+                                         th:text="${#temporals.format(dev.dataPrevistaDevolucao, 'dd')}">14</div>
+                                    <div class="fw-bold text-uppercase" style="font-size: 0.62rem; letter-spacing: 0.04em;"
+                                         th:text="${#temporals.format(dev.dataPrevistaDevolucao, 'MMM')}">JUN</div>
+                                </div>
+                                <div class="text-truncate">
+                                    <div class="fw-semibold text-dark text-truncate" style="font-size: 0.875rem;"
+                                         th:text="${dev.equipamento.nome}">Projetor Epson</div>
+                                    <div class="text-muted text-truncate" style="font-size: 0.76rem;"
+                                         th:text="${dev.responsavel.nomeSetor}">Gabinete do Prefeito</div>
+                                </div>
+                            </div>
+                            <form th:action="@{/movimentacoes/devolver/{id}(id=${dev.id})}" method="post" class="ms-2 flex-shrink-0"
+                                  onsubmit="return confirm('Confirmar a devolução deste equipamento ao almoxarifado?');">
+                                <button type="submit" class="btn btn-sm btn-light border text-success fw-semibold" title="Registrar Devolução">
+                                    <i class="bi bi-check2"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <a th:href="@{/movimentacoes(filtro='ativas')}" class="btn-figma-outline w-100 justify-content-center mt-3">
+                        Ver agenda completa
+                    </a>
+                </div>
+
+                <!-- Card 2: Inventario pendente (Identico ao card escuro do canto inferior direito do print) -->
+                <div class="figma-dark-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center justify-content-center"
+                             style="width: 38px; height: 38px; border-radius: 10px; background-color: rgba(255,255,255,0.1); color: #93C5FD;">
+                            <i class="bi bi-clipboard-check fs-5"></i>
+                        </div>
+                        <span class="badge rounded-pill fw-bold px-2 py-1"
+                              style="background-color: rgba(245, 158, 11, 0.2); color: #FBBF24; font-size: 0.68rem; letter-spacing: 0.06em;">
+                            ATENÇÃO
+                        </span>
+                    </div>
+
+                    <h3 class="h6 fw-bold text-white mb-1">Inventário pendente</h3>
+                    <p class="mb-3" style="font-size: 0.82rem; color: #CBD5E1; line-height: 1.45;">
+                        Existem <strong class="text-white" th:text="${badgePendentesInventario ?: 0}">0</strong> bens aguardando conferência patrimonial neste ciclo.
+                    </p>
+
+                    <button type="button" class="btn btn-sm w-100 fw-semibold"
+                            style="background-color: rgba(255,255,255,0.12); color: #FFFFFF; border: 1px solid rgba(255,255,255,0.18); border-radius: 8px; padding: 8px 12px;"
+                            data-bs-toggle="modal" data-bs-target="#modalInventarioPendente">
+                        Conferir bens pendentes &rarr;
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- MODAL DE CONFERENCIA DO INVENTARIO PENDENTE -->
+<div class="modal fade" id="modalInventarioPendente" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 14px;">
+            <div class="modal-header border-bottom">
+                <div>
+                    <h5 class="modal-title fw-bold mb-0">Conferência Patrimonial — Ciclo Atual</h5>
+                    <small class="text-muted">Valide a existência física e etiqueta dos bens pendentes</small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-figma mb-0">
+                        <thead>
+                        <tr>
+                            <th>TOMBAMENTO</th>
+                            <th>EQUIPAMENTO</th>
+                            <th>CATEGORIA</th>
+                            <th>SITUAÇÃO</th>
+                            <th class="text-end">AÇÃO</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:if="${#lists.isEmpty(pendentesInventario)}">
+                            <td colspan="5" class="text-center py-4 text-success fw-semibold">
+                                <i class="bi bi-check-circle-fill me-1"></i> Todos os bens do acervo já foram conferidos neste ciclo!
+                            </td>
+                        </tr>
+                        <tr th:each="pend : ${pendentesInventario}">
+                            <td class="fw-bold" th:text="${pend.patrimonio}">PAT-001</td>
+                            <td th:text="${pend.nome}">Projetor</td>
+                            <td th:text="${pend.categoria.nome}">Audiovisual</td>
+                            <td>
+                                <span class="badge rounded-pill" th:classappend="${pend.situacao.badgeClass}" th:text="${pend.situacao.descricao}">Status</span>
+                            </td>
+                            <td class="text-end">
+                                <form th:action="@{/inventario/conferir/{id}(id=${pend.id})}" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-primary fw-semibold">
+                                        <i class="bi bi-check2-circle me-1"></i>Confirmar Conferência
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer border-top">
+                <button type="button" class="btn-figma-outline" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const inputBusca = document.getElementById('buscaDashboard');
+        const selectStatus = document.getElementById('filtroStatusDashboard');
+        const linhas = document.querySelectorAll('#tabelaDashboard tbody tr[data-status]');
+
+        function filtrarTabela() {
+            const termo = (inputBusca.value || '').toLowerCase().trim();
+            const status = selectStatus.value;
+
+            linhas.forEach(tr => {
+                const texto = tr.innerText.toLowerCase();
+                const rowStatus = tr.getAttribute('data-status');
+                const matchTexto = !termo || texto.includes(termo);
+                const matchStatus = status === 'TODOS' || rowStatus === status;
+                tr.style.display = (matchTexto && matchStatus) ? '' : 'none';
+            });
+        }
+
+        if (inputBusca) inputBusca.addEventListener('input', filtrarTabela);
+        if (selectStatus) selectStatus.addEventListener('change', filtrarTabela);
+    });
+</script>
+</body>
+</html>

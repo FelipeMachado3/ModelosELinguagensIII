@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Cadastro de Setor')}"></head>
+<body>
+
+<aside th:replace="~{fragments/layout :: sidebar('setores')}"></aside>
+
+<div class="app-main">
+    <header th:replace="~{fragments/layout :: topbar('Cadastro de Setor')}"></header>
+
+    <main class="app-content" style="max-width: 780px;">
+        <div th:replace="~{fragments/layout :: alertas}"></div>
+
+        <div class="mb-4">
+            <div class="eyebrow-label">ESTRUTURA ORGANIZACIONAL</div>
+            <h1 class="page-title" th:text="${setor.id == null} ? 'Incluir Novo Setor' : 'Editar Setor'">Setor</h1>
+            <p class="page-subtitle">Informe a sigla, nome oficial e localização da unidade administrativa.</p>
+        </div>
+
+        <div class="figma-card p-4">
+            <form th:action="@{/setores/salvar}" th:object="${setor}" method="post">
+                <input type="hidden" th:field="*{id}"/>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="sigla" class="form-label fw-semibold small">Sigla do Setor *</label>
+                        <input type="text" id="sigla" th:field="*{sigla}" class="form-control text-uppercase"
+                               th:classappend="${#fields.hasErrors('sigla')} ? 'is-invalid'"
+                               placeholder="Ex: SECADM, GAB, CTI">
+                        <div class="invalid-feedback" th:errors="*{sigla}"></div>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label for="nome" class="form-label fw-semibold small">Nome Oficial do Setor *</label>
+                        <input type="text" id="nome" th:field="*{nome}" class="form-control"
+                               th:classappend="${#fields.hasErrors('nome')} ? 'is-invalid'"
+                               placeholder="Ex: Secretaria Municipal de Administração">
+                        <div class="invalid-feedback" th:errors="*{nome}"></div>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label for="localizacao" class="form-label fw-semibold small">Localização Física / Prédio</label>
+                        <input type="text" id="localizacao" th:field="*{localizacao}" class="form-control"
+                               placeholder="Ex: Bloco A - 2º Andar">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="ramal" class="form-label fw-semibold small">Ramal / Telefone</label>
+                        <input type="text" id="ramal" th:field="*{ramal}" class="form-control"
+                               placeholder="Ex: 2101">
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                    <a th:href="@{/setores}" class="btn-figma-outline">Cancelar</a>
+                    <button type="submit" class="btn-figma-primary">
+                        <i class="bi bi-check-lg"></i> Salvar Setor
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

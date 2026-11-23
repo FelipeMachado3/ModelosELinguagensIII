@@ -1,0 +1,18 @@
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: projeto-bimestre2-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: projeto_bimestre2
+      MYSQL_USER: projeto
+      MYSQL_PASSWORD: projeto123
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:

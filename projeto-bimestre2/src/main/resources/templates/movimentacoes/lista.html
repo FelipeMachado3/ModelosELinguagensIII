@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Empréstimos e Cautelas')}"></head>
+<body>
+
+<aside th:replace="~{fragments/layout :: sidebar('movimentacoes')}"></aside>
+
+<div class="app-main">
+    <header th:replace="~{fragments/layout :: topbar('Empréstimos')}"></header>
+
+    <main class="app-content">
+        <div th:replace="~{fragments/layout :: alertas}"></div>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <div>
+                <div class="eyebrow-label">CONTROLE DE CAUTELAS</div>
+                <h1 class="page-title">Empréstimos e Devoluções</h1>
+                <p class="page-subtitle">Acompanhamento de retiradas por setor, datas previstas e termos de responsabilidade.</p>
+            </div>
+            <a th:href="@{/movimentacoes/nova}" class="btn-figma-primary">
+                <i class="bi bi-plus-lg"></i> Registrar empréstimo
+            </a>
+        </div>
+
+        <div class="figma-card">
+            <div class="p-3 p-md-4 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="d-flex gap-2">
+                    <a th:href="@{/movimentacoes(filtro='todas')}" class="btn btn-sm fw-semibold"
+                       th:classappend="${filtro == 'todas'} ? 'btn-primary' : 'btn-light text-secondary'">Todas as Movimentações</a>
+                    <a th:href="@{/movimentacoes(filtro='ativas')}" class="btn btn-sm fw-semibold"
+                       th:classappend="${filtro == 'ativas'} ? 'btn-primary' : 'btn-light text-secondary'">Em Aberto (Não Devolvidos)</a>
+                </div>
+                <div class="position-relative" style="min-width: 280px;">
+                    <i class="bi bi-search position-absolute text-muted" style="left: 12px; top: 50%; transform: translateY(-50%); font-size: 0.85rem;"></i>
+                    <input type="text" id="buscaMovimentacao" class="form-control search-input-figma"
+                           placeholder="Buscar termo, patrimônio ou setor...">
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-figma mb-0" id="tabelaMovimentacoes">
+                    <thead>
+                    <tr>
+                        <th>TERMO</th>
+                        <th>PATRIMÔNIO / EQUIPAMENTO</th>
+                        <th>SETOR / RESPONSÁVEL</th>
+                        <th>RETIRADA</th>
+                        <th>PREVISÃO DEVOLUÇÃO</th>
+                        <th>DEVOLVIDO EM</th>
+                        <th>STATUS</th>
+                        <th class="text-end">AÇÕES</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${#lists.isEmpty(movimentacoes)}">
+                        <td colspan="8" class="text-center py-5 text-muted">Nenhuma movimentação registrada.</td>
+                    </tr>
+                    <tr th:each="mov : ${movimentacoes}" class="linha-filtro">
+                        <td class="fw-bold text-primary" th:text="${mov.numeroTermo}">TC-2026-0001</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="item-icon-box"><i class="bi bi-pc-display"></i></div>
+                                <div>
+                                    <div class="fw-semibold text-dark" th:text="${mov.equipamento.nome}">Equipamento</div>
+                                    <div class="text-muted" style="font-size: 0.76rem;" th:text="${mov.equipamento.patrimonio}">PAT-001</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="fw-semibold text-dark" th:text="${mov.responsavel.nomeSetor}">Setor</div>
+                            <div class="text-muted" style="font-size: 0.76rem;" th:text="${mov.responsavel.nome}">Servidor</div>
+                        </td>
+                        <td class="text-secondary" th:text="${#temporals.format(mov.dataRetirada, 'dd/MM/yyyy')}">01/01/2026</td>
+                        <td class="text-secondary" th:text="${#temporals.format(mov.dataPrevistaDevolucao, 'dd/MM/yyyy')}">08/01/2026</td>
+                        <td>
+                            <span th:if="${mov.dataDevolucao != null}" class="text-success fw-semibold"
+                                  th:text="${#temporals.format(mov.dataDevolucao, 'dd/MM/yyyy')}">05/01/2026</span>
+                            <span th:if="${mov.dataDevolucao == null}" class="text-muted">-</span>
+                        </td>
+                        <td>
+                            <span th:if="${!mov.ativa}" class="badge rounded-pill bg-success-subtle text-success fw-semibold px-2 py-1">Devolvido</span>
+                            <span th:if="${mov.atrasada}" class="badge rounded-pill bg-danger-subtle text-danger fw-semibold px-2 py-1">Atrasado</span>
+                            <span th:if="${mov.ativa and !mov.atrasada}" class="badge rounded-pill bg-primary-subtle text-primary fw-semibold px-2 py-1">Em Cautela</span>
+                        </td>
+                        <td class="text-end text-nowrap">
+                            <a th:href="@{/movimentacoes/termo/{id}(id=${mov.id})}" class="btn btn-sm btn-light border text-dark" title="Termo Oficial">
+                                <i class="bi bi-printer"></i>
+                            </a>
+                            <form th:if="${mov.ativa}" th:action="@{/movimentacoes/devolver/{id}(id=${mov.id})}" method="post" class="d-inline"
+                                  onsubmit="return confirm('Confirmar a devolução deste equipamento ao almoxarifado?');">
+                                <button type="submit" class="btn btn-sm btn-success fw-semibold">
+                                    <i class="bi bi-check2-circle me-1"></i>Devolver
+                                </button>
+                            </form>
+                            <form th:if="${!mov.ativa}" th:action="@{/movimentacoes/excluir/{id}(id=${mov.id})}" method="post" class="d-inline"
+                                  onsubmit="return confirm('Excluir este registro histórico já encerrado?');">
+                                <button type="submit" class="btn btn-sm btn-light border text-danger" title="Excluir histórico">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+<script>
+    document.getElementById('buscaMovimentacao')?.addEventListener('input', function () {
+        const termo = this.value.toLowerCase().trim();
+        document.querySelectorAll('#tabelaMovimentacoes tbody tr.linha-filtro').forEach(tr => {
+            tr.style.display = (!termo || tr.innerText.toLowerCase().includes(termo)) ? '' : 'none';
+        });
+    });
+</script>
+</body>
+</html>

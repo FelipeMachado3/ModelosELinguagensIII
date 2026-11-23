@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Patrimônio e Tombamento')}"></head>
+<body>
+
+<aside th:replace="~{fragments/layout :: sidebar('equipamentos')}"></aside>
+
+<div class="app-main">
+    <header th:replace="~{fragments/layout :: topbar('Patrimônio')}"></header>
+
+    <main class="app-content">
+        <div th:replace="~{fragments/layout :: alertas}"></div>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <div>
+                <div class="eyebrow-label">INVENTÁRIO DE BENS PERMANENTES</div>
+                <h1 class="page-title">Patrimônio e Equipamentos</h1>
+                <p class="page-subtitle">Controle de tombamento, número de série, estado de conservação e disponibilidade.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a th:href="@{/movimentacoes/nova}" class="btn-figma-outline">
+                    <i class="bi bi-arrow-left-right"></i> Registrar empréstimo
+                </a>
+                <a th:href="@{/equipamentos/novo}" class="btn-figma-primary">
+                    <i class="bi bi-plus-lg"></i> Novo patrimônio
+                </a>
+            </div>
+        </div>
+
+        <div class="figma-card">
+            <div class="p-3 p-md-4 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="d-flex flex-wrap gap-2">
+                    <a th:href="@{/equipamentos}" class="btn btn-sm fw-semibold"
+                       th:classappend="${situacaoFiltro == null} ? 'btn-primary' : 'btn-light text-secondary'">Todos</a>
+                    <a th:each="sit : ${situacoes}"
+                       th:href="@{/equipamentos(situacao=${sit})}"
+                       th:text="${sit.descricao}"
+                       class="btn btn-sm fw-semibold"
+                       th:classappend="${situacaoFiltro == sit} ? 'btn-primary' : 'btn-light text-secondary'">Status</a>
+                </div>
+                <div class="position-relative" style="min-width: 280px;">
+                    <i class="bi bi-search position-absolute text-muted" style="left: 12px; top: 50%; transform: translateY(-50%); font-size: 0.85rem;"></i>
+                    <input type="text" id="buscaEquipamento" class="form-control search-input-figma"
+                           placeholder="Filtrar por tombamento, nome ou série...">
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-figma mb-0" id="tabelaEquipamentos">
+                    <thead>
+                    <tr>
+                        <th>TOMBAMENTO</th>
+                        <th>EQUIPAMENTO / ESPECIFICAÇÃO</th>
+                        <th>Nº DE SÉRIE</th>
+                        <th>CATEGORIA</th>
+                        <th>CONSERVAÇÃO</th>
+                        <th>SITUAÇÃO</th>
+                        <th class="text-end">AÇÕES</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${#lists.isEmpty(equipamentos)}">
+                        <td colspan="7" class="text-center py-5 text-muted">Nenhum bem patrimonial encontrado.</td>
+                    </tr>
+                    <tr th:each="eq : ${equipamentos}" class="linha-filtro">
+                        <td>
+                            <span class="badge bg-dark-subtle text-dark fw-bold px-2 py-1" style="font-size: 0.8rem;"
+                                  th:text="${eq.patrimonio}">PAT-2026-0001</span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="item-icon-box"><i class="bi bi-pc-display"></i></div>
+                                <div>
+                                    <div class="fw-semibold text-dark" th:text="${eq.nome}">Notebook</div>
+                                    <div class="text-muted" style="font-size: 0.76rem;"
+                                         th:text="${(eq.marca ?: '-') + ' • ' + (eq.modelo ?: '-')}">Dell • Latitude</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-secondary small" th:text="${eq.numeroSerie ?: '-'}">SN123</td>
+                        <td class="text-secondary" th:text="${eq.categoria.nome}">Informática</td>
+                        <td class="text-secondary" th:text="${eq.estadoConservacao.descricao}">Bom</td>
+                        <td>
+                            <span class="badge rounded-pill px-2 py-1" th:classappend="${eq.situacao.badgeClass}" th:text="${eq.situacao.descricao}">Disponível</span>
+                        </td>
+                        <td class="text-end text-nowrap">
+                            <a th:if="${eq.situacao.disponivelParaCautela}"
+                               th:href="@{/movimentacoes/nova(equipamentoId=${eq.id})}"
+                               class="btn btn-sm btn-success fw-semibold" title="Emprestar equipamento">
+                                <i class="bi bi-box-arrow-up-right me-1"></i>Emprestar
+                            </a>
+                            <a th:href="@{/equipamentos/editar/{id}(id=${eq.id})}" class="btn btn-sm btn-light border text-primary" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form th:action="@{/equipamentos/excluir/{id}(id=${eq.id})}" method="post" class="d-inline"
+                                  onsubmit="return confirm('Confirma a exclusão deste bem patrimonial?');">
+                                <button type="submit" class="btn btn-sm btn-light border text-danger" title="Excluir">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+<script>
+    document.getElementById('buscaEquipamento')?.addEventListener('input', function () {
+        const termo = this.value.toLowerCase().trim();
+        document.querySelectorAll('#tabelaEquipamentos tbody tr.linha-filtro').forEach(tr => {
+            tr.style.display = (!termo || tr.innerText.toLowerCase().includes(termo)) ? '' : 'none';
+        });
+    });
+</script>
+</body>
+</html>

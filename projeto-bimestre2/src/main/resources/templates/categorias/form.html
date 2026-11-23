@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Cadastro de Categoria')}"></head>
+<body>
+
+<aside th:replace="~{fragments/layout :: sidebar('categorias')}"></aside>
+
+<div class="app-main">
+    <header th:replace="~{fragments/layout :: topbar('Cadastro de Categoria')}"></header>
+
+    <main class="app-content" style="max-width: 760px;">
+        <div class="mb-4">
+            <div class="eyebrow-label">CLASSIFICAÇÃO PATRIMONIAL</div>
+            <h1 class="page-title" th:text="${categoria.id == null} ? 'Nova Categoria Patrimonial' : 'Editar Categoria Patrimonial'">Categoria</h1>
+            <p class="page-subtitle">Defina o grupo técnico para catalogação dos equipamentos.</p>
+        </div>
+
+        <div class="figma-card p-4">
+            <form th:action="@{/categorias/salvar}" th:object="${categoria}" method="post">
+                <input type="hidden" th:field="*{id}"/>
+
+                <div class="mb-3">
+                    <label for="nome" class="form-label fw-semibold small">Nome da Categoria *</label>
+                    <input type="text" id="nome" th:field="*{nome}" class="form-control"
+                           th:classappend="${#fields.hasErrors('nome')} ? 'is-invalid'"
+                           placeholder="Ex: Informática, Audiovisual, Telecomunicações">
+                    <div class="invalid-feedback" th:errors="*{nome}"></div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="descricao" class="form-label fw-semibold small">Descrição</label>
+                    <textarea id="descricao" th:field="*{descricao}" class="form-control" rows="3"
+                              th:classappend="${#fields.hasErrors('descricao')} ? 'is-invalid'"
+                              placeholder="Detalhamento dos equipamentos pertencentes a este grupo"></textarea>
+                    <div class="invalid-feedback" th:errors="*{descricao}"></div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                    <a th:href="@{/configuracoes}" class="btn-figma-outline">Cancelar</a>
+                    <button type="submit" class="btn-figma-primary">
+                        <i class="bi bi-check-lg"></i> Salvar Categoria
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

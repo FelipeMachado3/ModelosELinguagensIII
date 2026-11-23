@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Configurações do Sistema')}"></head>
+<body>
+
+<aside th:replace="~{fragments/layout :: sidebar('configuracoes')}"></aside>
+
+<div class="app-main">
+    <header th:replace="~{fragments/layout :: topbar('Configurações')}"></header>
+
+    <main class="app-content">
+        <div th:replace="~{fragments/layout :: alertas}"></div>
+
+        <div class="mb-4">
+            <div class="eyebrow-label">ADMINISTRAÇÃO DO SISTEMA</div>
+            <h1 class="page-title">Configurações e Parâmetros Patrimoniais</h1>
+            <p class="page-subtitle">Gerencie categorias de bens técnicos e o ciclo de conferência de inventário.</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Card Ciclo de Inventario -->
+            <div class="col-lg-5">
+                <div class="figma-card p-4 h-100">
+                    <h2 class="h6 fw-bold text-dark mb-1">Ciclo de Inventário Patrimonial</h2>
+                    <p class="text-muted small mb-3">Controle de conferência física dos equipamentos tombados.</p>
+
+                    <div class="p-3 rounded-3 bg-light mb-3 d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="small text-muted">Bens aguardando conferência</div>
+                            <div class="h4 fw-bold text-dark mb-0" th:text="${pendentesInventario + ' de ' + totalEquipamentos}">0 de 0</div>
+                        </div>
+                        <i class="bi bi-clipboard-check fs-2 text-primary"></i>
+                    </div>
+
+                    <form th:action="@{/inventario/reiniciar}" method="post"
+                          onsubmit="return confirm('Deseja iniciar um novo ciclo de inventário? Todos os bens voltarão para o status pendente de conferência.');">
+                        <button type="submit" class="btn-figma-outline w-100 justify-content-center">
+                            <i class="bi bi-arrow-repeat"></i> Iniciar Novo Ciclo de Inventário
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Card Categorias -->
+            <div class="col-lg-7">
+                <div class="figma-card p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h2 class="h6 fw-bold text-dark mb-1">Categorias de Equipamentos</h2>
+                            <p class="text-muted small mb-0">Grupos técnicos utilizados no tombamento.</p>
+                        </div>
+                        <a th:href="@{/categorias/nova}" class="btn-figma-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> Nova Categoria
+                        </a>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-figma mb-0">
+                            <thead>
+                            <tr>
+                                <th>NOME</th>
+                                <th>DESCRIÇÃO</th>
+                                <th class="text-end">AÇÕES</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="cat : ${categorias}">
+                                <td class="fw-semibold" th:text="${cat.nome}">Informática</td>
+                                <td class="text-muted small" th:text="${cat.descricao}">Desc</td>
+                                <td class="text-end text-nowrap">
+                                    <a th:href="@{/categorias/editar/{id}(id=${cat.id})}" class="btn btn-sm btn-light border text-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form th:action="@{/categorias/excluir/{id}(id=${cat.id})}" method="post" class="d-inline"
+                                          onsubmit="return confirm('Excluir esta categoria?');">
+                                        <button type="submit" class="btn btn-sm btn-light border text-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

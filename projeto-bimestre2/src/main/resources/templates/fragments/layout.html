@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(titulo)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${titulo} + ' | Patrimônio Público - Gestão de Ativos'">Patrimônio Público - Gestão de Ativos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-bg: #0B1E38;
+            --sidebar-hover: #132C4E;
+            --sidebar-active: #2563EB;
+            --sidebar-text: #94A3B8;
+            --sidebar-section: #64748B;
+            --brand-blue: #1D63DC;
+            --brand-blue-hover: #164EB3;
+            --page-bg: #F8FAFC;
+            --card-border: #E2E8F0;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+        }
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--page-bg);
+            color: var(--text-main);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .app-sidebar {
+            width: 260px;
+            min-width: 260px;
+            background-color: var(--sidebar-bg);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            z-index: 1030;
+        }
+
+        .sidebar-brand {
+            padding: 20px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .sidebar-brand-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #2563EB, #1D4ED8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            color: #fff;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+        }
+
+        .sidebar-brand-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            line-height: 1.2;
+            color: #FFFFFF;
+        }
+
+        .sidebar-brand-sub {
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            color: #7C93B2;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .sidebar-nav {
+            padding: 16px 14px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .sidebar-section-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: var(--sidebar-section);
+            text-transform: uppercase;
+            padding: 0 12px;
+            margin-bottom: 8px;
+            margin-top: 14px;
+        }
+
+        .sidebar-section-label:first-child {
+            margin-top: 0;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border-radius: 8px;
+            color: var(--sidebar-text);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 4px;
+            transition: all 0.15s ease;
+        }
+
+        .sidebar-link:hover {
+            background-color: var(--sidebar-hover);
+            color: #FFFFFF;
+        }
+
+        .sidebar-link.active {
+            background-color: var(--sidebar-active);
+            color: #FFFFFF;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.28);
+        }
+
+        .sidebar-link-left {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+        }
+
+        .sidebar-link-left i {
+            font-size: 1.05rem;
+            width: 18px;
+            text-align: center;
+        }
+
+        .sidebar-pill {
+            background-color: #1E3A5F;
+            color: #CBD5E1;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 999px;
+        }
+
+        .sidebar-link.active .sidebar-pill {
+            background-color: rgba(255, 255, 255, 0.22);
+            color: #FFFFFF;
+        }
+
+        .sidebar-help-box {
+            margin: 10px 14px 8px 14px;
+            padding: 14px;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .sidebar-version-bar {
+            padding: 10px 18px 14px 18px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 0.7rem;
+            color: #64748B;
+        }
+
+        .app-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .app-topbar {
+            height: 64px;
+            background-color: #FFFFFF;
+            border-bottom: 1px solid var(--card-border);
+            padding: 0 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+        }
+
+        .topbar-breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .topbar-breadcrumb .current {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .topbar-bell {
+            position: relative;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .topbar-bell:hover {
+            background-color: #F1F5F9;
+            color: var(--text-main);
+        }
+
+        .topbar-bell-dot {
+            position: absolute;
+            top: 7px;
+            right: 8px;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: #EF4444;
+            border: 1.5px solid #FFFFFF;
+        }
+
+        .topbar-divider {
+            width: 1px;
+            height: 28px;
+            background-color: var(--card-border);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #DBEAFE;
+            color: #1D4ED8;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+            line-height: 1.2;
+        }
+
+        .user-role {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        .app-content {
+            padding: 28px 32px;
+            max-width: 1440px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .eyebrow-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #2563EB;
+            margin-bottom: 4px;
+        }
+
+        .page-title {
+            font-size: 1.65rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 4px;
+            letter-spacing: -0.02em;
+        }
+
+        .page-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 0;
+        }
+
+        .figma-card {
+            background-color: #FFFFFF;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+        }
+
+        .figma-dark-card {
+            background: linear-gradient(145deg, #0E2646 0%, #091930 100%);
+            border-radius: 12px;
+            color: #FFFFFF;
+            box-shadow: 0 4px 14px rgba(11, 30, 56, 0.16);
+        }
+
+        .btn-figma-primary {
+            background-color: var(--brand-blue);
+            border: 1px solid var(--brand-blue);
+            color: #FFFFFF;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 9px 16px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+
+        .btn-figma-primary:hover {
+            background-color: var(--brand-blue-hover);
+            border-color: var(--brand-blue-hover);
+            color: #FFFFFF;
+        }
+
+        .btn-figma-outline {
+            background-color: #FFFFFF;
+            border: 1px solid #CBD5E1;
+            color: var(--text-main);
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 9px 16px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+
+        .btn-figma-outline:hover {
+            background-color: #F8FAFC;
+            border-color: #94A3B8;
+            color: var(--text-main);
+        }
+
+        .table-figma thead th {
+            background-color: #F8FAFC;
+            color: #64748B;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--card-border);
+            padding: 12px 18px;
+        }
+
+        .table-figma tbody td {
+            padding: 14px 18px;
+            border-bottom: 1px solid #F1F5F9;
+            font-size: 0.875rem;
+            vertical-align: middle;
+        }
+
+        .table-figma tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table-figma tbody tr:hover {
+            background-color: #F8FAFC;
+        }
+
+        .item-icon-box {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background-color: #F1F5F9;
+            color: #475569;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .search-input-figma {
+            background-color: #F8FAFC;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 8px 14px 8px 36px;
+            font-size: 0.85rem;
+            color: var(--text-main);
+        }
+
+        .search-input-figma:focus {
+            background-color: #FFFFFF;
+            border-color: #2563EB;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+            outline: none;
+        }
+
+        @media (max-width: 991.98px) {
+            body {
+                flex-direction: column;
+            }
+            .app-sidebar {
+                width: 100%;
+                height: auto;
+                min-height: auto;
+                position: relative;
+            }
+            .app-content {
+                padding: 20px 16px;
+            }
+            .app-topbar {
+                padding: 0 16px;
+            }
+        }
+
+        @media print {
+            .no-print, .app-sidebar, .app-topbar {
+                display: none !important;
+            }
+            body {
+                background-color: #FFFFFF;
+                display: block;
+            }
+            .app-content {
+                padding: 0;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<aside th:fragment="sidebar(abaAtiva)" class="app-sidebar no-print">
+    <a th:href="@{/}" class="sidebar-brand">
+        <div class="sidebar-brand-icon">
+            <i class="bi bi-building"></i>
+        </div>
+        <div>
+            <div class="sidebar-brand-title">Patrimônio Público</div>
+            <div class="sidebar-brand-sub">GESTÃO DE ATIVOS</div>
+        </div>
+    </a>
+
+    <nav class="sidebar-nav">
+        <div class="sidebar-section-label">MENU PRINCIPAL</div>
+
+        <a th:href="@{/}" class="sidebar-link" th:classappend="${abaAtiva == 'inicio'} ? 'active'">
+            <span class="sidebar-link-left">
+                <i class="bi bi-grid"></i>
+                <span>Visão geral</span>
+            </span>
+        </a>
+
+        <a th:href="@{/equipamentos}" class="sidebar-link" th:classappend="${abaAtiva == 'equipamentos'} ? 'active'">
+            <span class="sidebar-link-left">
+                <i class="bi bi-archive"></i>
+                <span>Patrimônio</span>
+            </span>
+        </a>
+
+        <a th:href="@{/movimentacoes}" class="sidebar-link" th:classappend="${abaAtiva == 'movimentacoes'} ? 'active'">
+            <span class="sidebar-link-left">
+                <i class="bi bi-arrow-left-right"></i>
+                <span>Empréstimos</span>
+            </span>
+            <span class="sidebar-pill" th:text="${badgeEmprestimosAtivos ?: 0}">0</span>
+        </a>
+
+        <a th:href="@{/setores}" class="sidebar-link" th:classappend="${abaAtiva == 'setores'} ? 'active'">
+            <span class="sidebar-link-left">
+                <i class="bi bi-building"></i>
+                <span>Setores</span>
+            </span>
+        </a>
+
+        <a th:href="@{/responsaveis}" class="sidebar-link" th:classappend="${abaAtiva == 'responsaveis'} ? 'active'">
+            <span class="sidebar-link-left">
+                <i class="bi bi-people"></i>
+                <span>Responsáveis</span>
+            </span>
+        </a>
+
+        <a th:href="@{/relatorios}" class="sidebar-link" th:classappend="${abaAtiva == 'relatorios'} ? 'active'">
+            <span class="sidebar-link-left">
+                <i class="bi bi-file-earmark-text"></i>
+                <span>Relatórios</span>
+            </span>
+        </a>
+
+        <div class="sidebar-section-label">SISTEMA</div>
+
+        <a th:href="@{/configuracoes}" class="sidebar-link" th:classappend="${abaAtiva == 'configuracoes' or abaAtiva == 'categorias'} ? 'active'">
+            <span class="sidebar-link-left">
+                <i class="bi bi-gear"></i>
+                <span>Configurações</span>
+            </span>
+        </a>
+    </nav>
+
+    <div class="sidebar-help-box">
+        <div class="d-flex align-items-center gap-2 text-white fw-semibold mb-1" style="font-size: 0.78rem;">
+            <i class="bi bi-question-circle text-primary"></i>
+            <span>Precisa de ajuda?</span>
+        </div>
+        <p class="mb-2" style="font-size: 0.71rem; color: #94A3B8; line-height: 1.35;">
+            Consulte o manual de utilização do sistema.
+        </p>
+        <a href="#" data-bs-toggle="modal" data-bs-target="#modalManualSistema"
+           class="text-decoration-none fw-semibold" style="font-size: 0.74rem; color: #60A5FA;">
+            Acessar manual &rarr;
+        </a>
+    </div>
+
+    <div class="sidebar-version-bar">
+        Versão 1.0.0 &bull; Ambiente seguro
+    </div>
+</aside>
+
+<header th:fragment="topbar(paginaAtual)" class="app-topbar no-print">
+    <div class="topbar-breadcrumb">
+        <span>Gestão patrimonial</span>
+        <i class="bi bi-chevron-right small"></i>
+        <span class="current" th:text="${paginaAtual}">Visão geral</span>
+    </div>
+
+    <div class="topbar-actions">
+        <div class="dropdown">
+            <button class="topbar-bell" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Alertas de devolução">
+                <i class="bi bi-bell"></i>
+                <span th:if="${badgeAtrasadas != null and badgeAtrasadas > 0}" class="topbar-bell-dot"></span>
+            </button>
+            <div class="dropdown-menu dropdown-menu-end shadow-sm border-0 p-3" style="width: 310px; border-radius: 12px;">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold small">Alertas de Prazo</span>
+                    <span class="badge bg-danger-subtle text-danger" th:text="${badgeAtrasadas ?: 0} + ' em atraso'">0</span>
+                </div>
+                <div th:if="${#lists.isEmpty(notificacoesAtrasadas)}" class="text-muted small py-2">
+                    Nenhuma devolução em atraso no momento.
+                </div>
+                <div th:each="atraso : ${notificacoesAtrasadas}" class="border-top py-2 small">
+                    <div class="fw-semibold text-danger" th:text="${atraso.equipamento.patrimonio + ' - ' + atraso.equipamento.nome}">Equipamento</div>
+                    <div class="text-muted" th:text="${atraso.responsavel.nomeSetor + ' • Venceu em ' + #temporals.format(atraso.dataPrevistaDevolucao, 'dd/MM/yyyy')}">Setor</div>
+                </div>
+                <a th:href="@{/movimentacoes(filtro='ativas')}" class="btn btn-sm btn-light w-100 mt-2 fw-semibold">Ver todas as cautelas</a>
+            </div>
+        </div>
+
+        <div class="topbar-divider"></div>
+
+        <div class="user-profile">
+            <div class="user-avatar">MA</div>
+            <div class="d-none d-sm-block">
+                <div class="user-name">Mariana Alves</div>
+                <div class="user-role">Administradora</div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div th:fragment="alertas" class="no-print">
+    <div th:if="${sucesso}" class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" style="border-radius: 10px;" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        <span th:text="${sucesso}">Operação realizada com sucesso.</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${erro}" class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" style="border-radius: 10px;" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <span th:text="${erro}">Erro na operação.</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+</div>
+
+<!-- MODAL MANUAL DE UTILIZACAO (BOTAO "ACESSAR MANUAL" DA SIDEBAR) -->
+<th:block th:fragment="scripts">
+    <div class="modal fade" id="modalManualSistema" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow" style="border-radius: 14px;">
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-book text-primary me-2"></i>Manual Rápido — Controle Patrimonial</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-3 small">
+                        <div class="col-md-6">
+                            <div class="p-3 rounded-3 bg-light h-100">
+                                <div class="fw-bold text-dark mb-1">1. Setores e Responsáveis</div>
+                                <p class="text-muted mb-0">Cadastre primeiro as unidades administrativas em <strong>Setores</strong> e depois vincule os servidores titulares em <strong>Responsáveis</strong>.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 rounded-3 bg-light h-100">
+                                <div class="fw-bold text-dark mb-1">2. Tombamento de Patrimônio</div>
+                                <p class="text-muted mb-0">Registre cada equipamento técnico em <strong>Patrimônio</strong> com número de tombamento único (`PAT-AAAA-NNNN`), série e categoria.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 rounded-3 bg-light h-100">
+                                <div class="fw-bold text-dark mb-1">3. Empréstimos e Termo de Cautela</div>
+                                <p class="text-muted mb-0">Em <strong>Empréstimos</strong>, selecione um bem disponível, o setor/servidor e a data de devolução. O sistema gera o Termo Oficial imprimível e bloqueia retiradas duplicadas.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 rounded-3 bg-light h-100">
+                                <div class="fw-bold text-dark mb-1">4. Relatórios por Setor e Inventário</div>
+                                <p class="text-muted mb-0">Em <strong>Relatórios</strong>, filtre por setor para emitir o extrato web de bens sob cautela. Na <strong>Visão geral</strong>, acompanhe o card de <em>Inventário pendente</em>.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn-figma-primary" data-bs-dismiss="modal">Entendi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</th:block>
+
+</body>
+</html>

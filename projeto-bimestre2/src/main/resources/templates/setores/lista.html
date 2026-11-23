@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Setores Administrativos')}"></head>
+<body>
+
+<aside th:replace="~{fragments/layout :: sidebar('setores')}"></aside>
+
+<div class="app-main">
+    <header th:replace="~{fragments/layout :: topbar('Setores')}"></header>
+
+    <main class="app-content">
+        <div th:replace="~{fragments/layout :: alertas}"></div>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <div>
+                <div class="eyebrow-label">ESTRUTURA ORGANIZACIONAL</div>
+                <h1 class="page-title">Setores e Unidades Administrativas</h1>
+                <p class="page-subtitle">Cadastre os departamentos e secretarias do órgão para controle de cautelas e relatórios.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a th:href="@{/responsaveis/novo}" class="btn-figma-outline">
+                    <i class="bi bi-person-plus"></i> Novo responsável
+                </a>
+                <a th:href="@{/setores/novo}" class="btn-figma-primary">
+                    <i class="bi bi-plus-lg"></i> Incluir setor
+                </a>
+            </div>
+        </div>
+
+        <div class="figma-card">
+            <div class="table-responsive">
+                <table class="table table-figma mb-0">
+                    <thead>
+                    <tr>
+                        <th>SIGLA</th>
+                        <th>NOME DO SETOR / SECRETARIA</th>
+                        <th>LOCALIZAÇÃO FÍSICA</th>
+                        <th>RAMAL</th>
+                        <th class="text-end">AÇÕES</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${#lists.isEmpty(setores)}">
+                        <td colspan="5" class="text-center py-5 text-muted">Nenhum setor cadastrado.</td>
+                    </tr>
+                    <tr th:each="setor : ${setores}">
+                        <td><span class="badge bg-primary-subtle text-primary fw-bold px-2 py-1" th:text="${setor.sigla}">SECADM</span></td>
+                        <td class="fw-semibold text-dark" th:text="${setor.nome}">Secretaria de Administração</td>
+                        <td class="text-secondary" th:text="${setor.localizacao ?: '-'}">Bloco A</td>
+                        <td class="text-muted" th:text="${setor.ramal ?: '-'}">2101</td>
+                        <td class="text-end text-nowrap">
+                            <a th:href="@{/relatorios(setorId=${setor.id})}" class="btn btn-sm btn-light border text-dark" title="Relatório deste setor">
+                                <i class="bi bi-file-earmark-text me-1"></i>Relatório
+                            </a>
+                            <a th:href="@{/responsaveis/novo(setorId=${setor.id})}" class="btn btn-sm btn-light border text-success" title="Adicionar responsável neste setor">
+                                <i class="bi bi-person-plus"></i>
+                            </a>
+                            <a th:href="@{/setores/editar/{id}(id=${setor.id})}" class="btn btn-sm btn-light border text-primary" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form th:action="@{/setores/excluir/{id}(id=${setor.id})}" method="post" class="d-inline"
+                                  onsubmit="return confirm('Deseja realmente excluir este setor?');">
+                                <button type="submit" class="btn btn-sm btn-light border text-danger" title="Excluir">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

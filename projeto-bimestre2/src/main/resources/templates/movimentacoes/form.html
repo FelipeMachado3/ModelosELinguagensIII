@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Registrar Empréstimo')}"></head>
+<body>
+
+<aside th:replace="~{fragments/layout :: sidebar('movimentacoes')}"></aside>
+
+<div class="app-main">
+    <header th:replace="~{fragments/layout :: topbar('Registrar Empréstimo')}"></header>
+
+    <main class="app-content" style="max-width: 860px;">
+        <div th:replace="~{fragments/layout :: alertas}"></div>
+
+        <div class="mb-4">
+            <div class="eyebrow-label">SAÍDA DE PATRIMÔNIO</div>
+            <h1 class="page-title">Registrar Empréstimo (Termo de Cautela)</h1>
+            <p class="page-subtitle">Selecione o equipamento disponível, o setor/servidor responsável e as datas de retirada e devolução.</p>
+        </div>
+
+        <div class="figma-card p-4">
+            <div th:if="${#lists.isEmpty(equipamentosDisponiveis)}" class="alert alert-warning border-0">
+                <i class="bi bi-info-circle me-2"></i>
+                Não há equipamentos com status <strong>Disponível</strong> no momento para empréstimo.
+            </div>
+
+            <form th:action="@{/movimentacoes/salvar}" th:object="${movimentacao}" method="post">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label for="equipamento" class="form-label fw-semibold small">Equipamento Disponível (Tombamento) *</label>
+                        <select id="equipamento" th:field="*{equipamento}" class="form-select"
+                                th:classappend="${#fields.hasErrors('equipamento')} ? 'is-invalid'">
+                            <option value="">-- Selecione o equipamento tombado --</option>
+                            <option th:each="eq : ${equipamentosDisponiveis}"
+                                    th:value="${eq.id}"
+                                    th:text="${eq.identificacaoCompleta}">PAT-001 - Notebook</option>
+                        </select>
+                        <div class="invalid-feedback" th:errors="*{equipamento}"></div>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="responsavel" class="form-label fw-semibold small">Setor Destino / Servidor Responsável *</label>
+                        <select id="responsavel" th:field="*{responsavel}" class="form-select"
+                                th:classappend="${#fields.hasErrors('responsavel')} ? 'is-invalid'">
+                            <option value="">-- Selecione o setor e o servidor que está retirando --</option>
+                            <option th:each="resp : ${responsaveis}"
+                                    th:value="${resp.id}"
+                                    th:text="${resp.descricaoSetorResponsavel}">CTI - Carlos</option>
+                        </select>
+                        <div class="invalid-feedback" th:errors="*{responsavel}"></div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="dataRetirada" class="form-label fw-semibold small">Data de Retirada *</label>
+                        <input type="date" id="dataRetirada" th:field="*{dataRetirada}" class="form-control"
+                               th:classappend="${#fields.hasErrors('dataRetirada')} ? 'is-invalid'">
+                        <div class="invalid-feedback" th:errors="*{dataRetirada}"></div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="dataPrevistaDevolucao" class="form-label fw-semibold small">Data Prevista para Devolução *</label>
+                        <input type="date" id="dataPrevistaDevolucao" th:field="*{dataPrevistaDevolucao}" class="form-control"
+                               th:classappend="${#fields.hasErrors('dataPrevistaDevolucao')} ? 'is-invalid'">
+                        <div class="invalid-feedback" th:errors="*{dataPrevistaDevolucao}"></div>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="observacao" class="form-label fw-semibold small">Finalidade / Observações da Cautela</label>
+                        <textarea id="observacao" th:field="*{observacao}" class="form-control" rows="3"
+                                  placeholder="Ex: Uso em vistoria externa, evento institucional ou suporte técnico ao setor."></textarea>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                    <a th:href="@{/movimentacoes}" class="btn-figma-outline">Cancelar</a>
+                    <button type="submit" class="btn-figma-primary" th:disabled="${#lists.isEmpty(equipamentosDisponiveis)}">
+                        <i class="bi bi-file-earmark-check"></i> Confirmar Empréstimo e Emitir Termo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Servidores Responsáveis')}"></head>
+<body>
+
+<aside th:replace="~{fragments/layout :: sidebar('responsaveis')}"></aside>
+
+<div class="app-main">
+    <header th:replace="~{fragments/layout :: topbar('Responsáveis')}"></header>
+
+    <main class="app-content">
+        <div th:replace="~{fragments/layout :: alertas}"></div>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <div>
+                <div class="eyebrow-label">AGENTES DE GUARDA PATRIMONIAL</div>
+                <h1 class="page-title">Servidores Responsáveis</h1>
+                <p class="page-subtitle">Servidores autorizados a retirar equipamentos e assinar termos de cautela pelos setores.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a th:href="@{/setores/novo}" class="btn-figma-outline">
+                    <i class="bi bi-building-add"></i> Incluir setor
+                </a>
+                <a th:href="@{/responsaveis/novo}" class="btn-figma-primary">
+                    <i class="bi bi-person-plus"></i> Inserir responsável
+                </a>
+            </div>
+        </div>
+
+        <div class="figma-card">
+            <div class="p-3 p-md-4 border-bottom d-flex flex-wrap gap-2">
+                <a th:href="@{/responsaveis}" class="btn btn-sm fw-semibold"
+                   th:classappend="${setorFiltro == null} ? 'btn-primary' : 'btn-light text-secondary'">Todos os Setores</a>
+                <a th:each="s : ${setores}"
+                   th:href="@{/responsaveis(setorId=${s.id})}"
+                   th:text="${s.sigla}"
+                   class="btn btn-sm fw-semibold"
+                   th:classappend="${setorFiltro == s.id} ? 'btn-primary' : 'btn-light text-secondary'">SIGLA</a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-figma mb-0">
+                    <thead>
+                    <tr>
+                        <th>SERVIDOR RESPONSÁVEL</th>
+                        <th>MATRÍCULA</th>
+                        <th>CARGO / FUNÇÃO</th>
+                        <th>SETOR DE LOTAÇÃO</th>
+                        <th>E-MAIL INSTITUCIONAL</th>
+                        <th class="text-end">AÇÕES</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${#lists.isEmpty(responsaveis)}">
+                        <td colspan="6" class="text-center py-5 text-muted">Nenhum servidor responsável cadastrado.</td>
+                    </tr>
+                    <tr th:each="resp : ${responsaveis}">
+                        <td class="fw-semibold text-dark" th:text="${resp.nome}">Carlos Henrique</td>
+                        <td><span class="badge bg-secondary-subtle text-dark fw-semibold" th:text="${resp.matricula}">10458-2</span></td>
+                        <td class="text-secondary" th:text="${resp.cargo ?: '-'}">Analista</td>
+                        <td>
+                            <span class="badge bg-primary-subtle text-primary fw-bold me-1" th:text="${resp.setor.sigla}">CTI</span>
+                            <span class="text-dark" th:text="${resp.setor.nome}">Secretaria</span>
+                        </td>
+                        <td class="text-muted" th:text="${resp.email ?: '-'}">email@orgao.gov.br</td>
+                        <td class="text-end text-nowrap">
+                            <a th:href="@{/responsaveis/editar/{id}(id=${resp.id})}" class="btn btn-sm btn-light border text-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form th:action="@{/responsaveis/excluir/{id}(id=${resp.id})}" method="post" class="d-inline"
+                                  onsubmit="return confirm('Deseja realmente excluir este servidor responsável?');">
+                                <button type="submit" class="btn btn-sm btn-light border text-danger">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

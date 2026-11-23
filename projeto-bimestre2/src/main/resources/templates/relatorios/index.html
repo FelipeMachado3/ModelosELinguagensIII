@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Relatórios Patrimoniais por Setor')}"></head>
+<body>
+
+<aside th:replace="~{fragments/layout :: sidebar('relatorios')}"></aside>
+
+<div class="app-main">
+    <header th:replace="~{fragments/layout :: topbar('Relatórios')}"></header>
+
+    <main class="app-content">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 no-print">
+            <div>
+                <div class="eyebrow-label">PRESTAÇÃO DE CONTAS E AUDITORIA</div>
+                <h1 class="page-title">Relatórios Patrimoniais por Setor</h1>
+                <p class="page-subtitle">Gere relatórios web detalhados por unidade administrativa ou o inventário geral do órgão.</p>
+            </div>
+            <button onclick="window.print()" class="btn-figma-primary">
+                <i class="bi bi-printer"></i> Imprimir / Exportar PDF
+            </button>
+        </div>
+
+        <!-- Filtro de Geracao de Relatorio por Setor -->
+        <div class="figma-card p-4 mb-4 no-print">
+            <form th:action="@{/relatorios}" method="get" class="row g-3 align-items-end">
+                <div class="col-md-8">
+                    <label for="setorId" class="form-label fw-semibold small">Filtrar Relatório por Setor / Unidade Administrativa</label>
+                    <select id="setorId" name="setorId" class="form-select">
+                        <option value="">-- Todos os Setores (Relatório Geral Consolidado) --</option>
+                        <option th:each="s : ${setores}"
+                                th:value="${s.id}"
+                                th:selected="${setorIdSelecionado != null and setorIdSelecionado == s.id}"
+                                th:text="${s.identificacao}">SECADM - Secretaria</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex gap-2">
+                    <button type="submit" class="btn-figma-primary flex-grow-1 justify-content-center">
+                        <i class="bi bi-file-earmark-bar-graph"></i> Gerar Relatório
+                    </button>
+                    <a th:if="${setorIdSelecionado != null}" th:href="@{/relatorios}" class="btn-figma-outline">Limpar</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Cabecalho Oficial do Relatorio Gerado -->
+        <div class="figma-card p-4 mb-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-start border-bottom pb-3 mb-3 gap-2">
+                <div>
+                    <div class="text-uppercase small fw-bold text-primary"
+                         th:text="${setorSelecionado != null} ? 'RELATÓRIO SETORIAL DE CAUTELAS E BENS' : 'RELATÓRIO GERAL CONSOLIDADO DO ÓRGÃO'">RELATÓRIO</div>
+                    <h2 class="h5 fw-bold text-dark mb-1"
+                        th:text="${setorSelecionado != null} ? ${setorSelecionado.sigla + ' — ' + setorSelecionado.nome} : 'Todas as Unidades Administrativas'">Setor</h2>
+                    <div class="text-muted small" th:text="'Emitido em: ' + ${#temporals.format(dataEmissao, 'dd/MM/yyyy')}">Data</div>
+                </div>
+
+                <!-- Resumo Numerico -->
+                <div th:if="${setorSelecionado != null}" class="d-flex gap-3 small">
+                    <div class="px-3 py-2 rounded bg-light"><strong>Movimentações:</strong> <span th:text="${#lists.size(movimentacoesRelatorio)}">0</span></div>
+                    <div class="px-3 py-2 rounded bg-primary-subtle text-primary"><strong>Em posse do setor:</strong> <span th:text="${ativasSetor}">0</span></div>
+                    <div class="px-3 py-2 rounded bg-danger-subtle text-danger"><strong>Em atraso:</strong> <span th:text="${atrasadasSetor}">0</span></div>
+                </div>
+                <div th:if="${setorSelecionado == null}" class="d-flex flex-wrap gap-3 small">
+                    <div class="px-3 py-2 rounded bg-light"><strong>Total Acervo:</strong> <span th:text="${totalEquipamentos}">0</span></div>
+                    <div class="px-3 py-2 rounded bg-success-subtle text-success"><strong>Disponíveis:</strong> <span th:text="${totalDisponiveis}">0</span></div>
+                    <div class="px-3 py-2 rounded bg-primary-subtle text-primary"><strong>Em Cautela:</strong> <span th:text="${totalEmprestados}">0</span></div>
+                    <div class="px-3 py-2 rounded bg-danger-subtle text-danger"><strong>Atrasados:</strong> <span th:text="${totalAtrasadas}">0</span></div>
+                </div>
+            </div>
+
+            <!-- Servidores vinculados ao setor filtrado -->
+            <div th:if="${setorSelecionado != null}" class="mb-4">
+                <h3 class="h6 fw-bold text-secondary mb-2">Servidores Responsáveis Lotados no Setor</h3>
+                <div class="d-flex flex-wrap gap-2">
+                    <span th:if="${#lists.isEmpty(responsaveisSetor)}" class="text-muted small">Nenhum servidor cadastrado neste setor.</span>
+                    <span th:each="r : ${responsaveisSetor}" class="badge bg-light text-dark border px-3 py-2 fw-normal">
+                        <i class="bi bi-person-badge text-primary me-1"></i>
+                        <strong th:text="${r.nome}">Nome</strong> — Mat. <span th:text="${r.matricula}">000</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Tabela de Movimentacoes / Bens do Relatorio -->
+            <h3 class="h6 fw-bold text-secondary mb-2">Histórico de Cautelas e Situação Atual</h3>
+            <div class="table-responsive">
+                <table class="table table-figma mb-0">
+                    <thead>
+                    <tr>
+                        <th>TERMO</th>
+                        <th>TOMBAMENTO</th>
+                        <th>EQUIPAMENTO</th>
+                        <th>SETOR / RESPONSÁVEL</th>
+                        <th>RETIRADA</th>
+                        <th>PREVISÃO DEV.</th>
+                        <th>SITUAÇÃO</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${#lists.isEmpty(movimentacoesRelatorio)}">
+                        <td colspan="7" class="text-center py-4 text-muted">Nenhum registro encontrado para este filtro.</td>
+                    </tr>
+                    <tr th:each="mov : ${movimentacoesRelatorio}">
+                        <td class="fw-bold text-primary" th:text="${mov.numeroTermo}">TC-2026-0001</td>
+                        <td class="fw-semibold" th:text="${mov.equipamento.patrimonio}">PAT-001</td>
+                        <td th:text="${mov.equipamento.nome}">Notebook</td>
+                        <td>
+                            <div class="fw-semibold" th:text="${mov.responsavel.nomeSetor}">Setor</div>
+                            <small class="text-muted" th:text="${mov.responsavel.nome}">Servidor</small>
+                        </td>
+                        <td th:text="${#temporals.format(mov.dataRetirada, 'dd/MM/yyyy')}">01/01/2026</td>
+                        <td th:text="${#temporals.format(mov.dataPrevistaDevolucao, 'dd/MM/yyyy')}">08/01/2026</td>
+                        <td>
+                            <span th:if="${!mov.ativa}" class="badge rounded-pill bg-success-subtle text-success">Devolvido</span>
+                            <span th:if="${mov.atrasada}" class="badge rounded-pill bg-danger-subtle text-danger">Atrasado</span>
+                            <span th:if="${mov.ativa and !mov.atrasada}" class="badge rounded-pill bg-primary-subtle text-primary">Em Cautela</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Inventario Geral Completo (exibido quando nao ha filtro especifico de setor) -->
+        <div th:if="${setorSelecionado == null}" class="figma-card p-4">
+            <h2 class="h6 fw-bold text-dark mb-3">Inventário Completo de Bens Tombados</h2>
+            <div class="table-responsive">
+                <table class="table table-figma mb-0">
+                    <thead>
+                    <tr>
+                        <th>TOMBAMENTO</th>
+                        <th>EQUIPAMENTO</th>
+                        <th>CATEGORIA</th>
+                        <th>CONSERVAÇÃO</th>
+                        <th>INVENTÁRIO</th>
+                        <th>SITUAÇÃO</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="eq : ${equipamentos}">
+                        <td class="fw-bold" th:text="${eq.patrimonio}">PAT-001</td>
+                        <td th:text="${eq.nome}">Notebook</td>
+                        <td th:text="${eq.categoria.nome}">Informática</td>
+                        <td th:text="${eq.estadoConservacao.descricao}">Bom</td>
+                        <td>
+                            <span th:if="${eq.conferidoInventario}" class="text-success small fw-semibold"><i class="bi bi-check-circle me-1"></i>Conferido</span>
+                            <span th:unless="${eq.conferidoInventario}" class="text-warning small fw-semibold"><i class="bi bi-clock me-1"></i>Pendente</span>
+                        </td>
+                        <td>
+                            <span class="badge rounded-pill px-2 py-1" th:classappend="${eq.situacao.badgeClass}" th:text="${eq.situacao.descricao}">Disponível</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

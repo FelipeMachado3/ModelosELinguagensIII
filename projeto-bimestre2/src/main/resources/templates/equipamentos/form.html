@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Tombamento de Patrimônio')}"></head>
+<body>
+
+<aside th:replace="~{fragments/layout :: sidebar('equipamentos')}"></aside>
+
+<div class="app-main">
+    <header th:replace="~{fragments/layout :: topbar('Cadastro de Patrimônio')}"></header>
+
+    <main class="app-content" style="max-width: 920px;">
+        <div th:replace="~{fragments/layout :: alertas}"></div>
+
+        <div class="mb-4">
+            <div class="eyebrow-label">INCORPORAÇÃO PATRIMONIAL</div>
+            <h1 class="page-title" th:text="${equipamento.id == null} ? 'Novo Patrimônio / Equipamento' : 'Editar Bem Patrimonial'">Novo Patrimônio</h1>
+            <p class="page-subtitle">Preencha os dados de identificação técnica e tombamento do órgão.</p>
+        </div>
+
+        <div class="figma-card p-4">
+            <form th:action="@{/equipamentos/salvar}" th:object="${equipamento}" method="post">
+                <input type="hidden" th:field="*{id}"/>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="patrimonio" class="form-label fw-semibold small">Nº Tombamento / Patrimônio *</label>
+                        <input type="text" id="patrimonio" th:field="*{patrimonio}" class="form-control text-uppercase"
+                               th:classappend="${#fields.hasErrors('patrimonio')} ? 'is-invalid'"
+                               placeholder="Ex: PAT-2026-0006">
+                        <div class="invalid-feedback" th:errors="*{patrimonio}"></div>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label for="nome" class="form-label fw-semibold small">Nome / Especificação Técnica *</label>
+                        <input type="text" id="nome" th:field="*{nome}" class="form-control"
+                               th:classappend="${#fields.hasErrors('nome')} ? 'is-invalid'"
+                               placeholder="Ex: Notebook Corporativo 15.6 Core i7">
+                        <div class="invalid-feedback" th:errors="*{nome}"></div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="marca" class="form-label fw-semibold small">Marca / Fabricante</label>
+                        <input type="text" id="marca" th:field="*{marca}" class="form-control" placeholder="Ex: Dell, Epson, Bosch">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="modelo" class="form-label fw-semibold small">Modelo</label>
+                        <input type="text" id="modelo" th:field="*{modelo}" class="form-control" placeholder="Ex: Latitude 5540">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="numeroSerie" class="form-label fw-semibold small">Número de Série (S/N)</label>
+                        <input type="text" id="numeroSerie" th:field="*{numeroSerie}" class="form-control" placeholder="Ex: BR-99812A">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="categoria" class="form-label fw-semibold small">Categoria Patrimonial *</label>
+                        <select id="categoria" th:field="*{categoria}" class="form-select"
+                                th:classappend="${#fields.hasErrors('categoria')} ? 'is-invalid'">
+                            <option value="">-- Selecione a categoria --</option>
+                            <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nome}">Categoria</option>
+                        </select>
+                        <div class="invalid-feedback" th:errors="*{categoria}"></div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="dataAquisicao" class="form-label fw-semibold small">Data de Aquisição / Tombamento</label>
+                        <input type="date" id="dataAquisicao" th:field="*{dataAquisicao}" class="form-control">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="estadoConservacao" class="form-label fw-semibold small">Estado de Conservação *</label>
+                        <select id="estadoConservacao" th:field="*{estadoConservacao}" class="form-select">
+                            <option th:each="est : ${estadosConservacao}" th:value="${est}" th:text="${est.descricao}">Bom</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="situacao" class="form-label fw-semibold small">Situação Patrimonial *</label>
+                        <select id="situacao" th:field="*{situacao}" class="form-select">
+                            <option th:each="sit : ${situacoes}" th:value="${sit}" th:text="${sit.descricao}">Disponível</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                    <a th:href="@{/equipamentos}" class="btn-figma-outline">Cancelar</a>
+                    <button type="submit" class="btn-figma-primary">
+                        <i class="bi bi-check-lg"></i> Salvar Patrimônio
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>
