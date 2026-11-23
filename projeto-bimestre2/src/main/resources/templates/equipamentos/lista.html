@@ -59,10 +59,10 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:if="${#lists.isEmpty(equipamentos)}">
+                    <tr th:if="${equipamentos == null or #lists.isEmpty(equipamentos)}">
                         <td colspan="7" class="text-center py-5 text-muted">Nenhum bem patrimonial encontrado.</td>
                     </tr>
-                    <tr th:each="eq : ${equipamentos}" class="linha-filtro">
+                    <tr th:each="eq : ${equipamentos != null ? equipamentos : #lists.emptyList()}" class="linha-filtro">
                         <td>
                             <span class="badge bg-dark-subtle text-dark fw-bold px-2 py-1" style="font-size: 0.8rem;"
                                   th:text="${eq.patrimonio}">PAT-2026-0001</span>
@@ -78,13 +78,18 @@
                             </div>
                         </td>
                         <td class="text-secondary small" th:text="${eq.numeroSerie ?: '-'}">SN123</td>
-                        <td class="text-secondary" th:text="${eq.categoria.nome}">Informática</td>
-                        <td class="text-secondary" th:text="${eq.estadoConservacao.descricao}">Bom</td>
+                        <td class="text-secondary" th:text="${eq.categoria != null ? eq.categoria.nome : '-'}">Informática</td>
+                        <td class="text-secondary" th:text="${eq.estadoConservacao != null ? eq.estadoConservacao.descricao : '-'}">Bom</td>
                         <td>
-                            <span class="badge rounded-pill px-2 py-1" th:classappend="${eq.situacao.badgeClass}" th:text="${eq.situacao.descricao}">Disponível</span>
+                            <span th:if="${eq.situacao != null}"
+                                  class="badge rounded-pill px-2 py-1"
+                                  th:classappend="${eq.situacao.badgeClass}"
+                                  th:text="${eq.situacao.descricao}">Disponível</span>
+                            <span th:if="${eq.situacao == null}"
+                                  class="badge rounded-pill px-2 py-1 bg-light text-dark">-</span>
                         </td>
                         <td class="text-end text-nowrap">
-                            <a th:if="${eq.situacao.disponivelParaCautela}"
+                            <a th:if="${eq.situacao != null and eq.situacao.disponivelParaCautela}"
                                th:href="@{/movimentacoes/nova(equipamentoId=${eq.id})}"
                                class="btn btn-sm btn-success fw-semibold" title="Emprestar equipamento">
                                 <i class="bi bi-box-arrow-up-right me-1"></i>Emprestar

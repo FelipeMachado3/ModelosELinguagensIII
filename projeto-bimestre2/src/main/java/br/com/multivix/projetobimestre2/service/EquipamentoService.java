@@ -21,19 +21,26 @@ public class EquipamentoService {
     }
 
     public List<Equipamento> listarTodos() {
-        return equipamentoRepository.findAllByOrderByPatrimonioAsc();
+        List<Equipamento> lista = equipamentoRepository.findAllByOrderByPatrimonioAsc();
+        return lista != null ? lista : List.of();
     }
 
     public List<Equipamento> listarDisponiveis() {
-        return equipamentoRepository.findBySituacaoOrderByNomeAsc(StatusEquipamento.DISPONIVEL);
+        List<Equipamento> lista = equipamentoRepository.findBySituacaoOrderByNomeAsc(StatusEquipamento.DISPONIVEL);
+        return lista != null ? lista : List.of();
     }
 
     public List<Equipamento> listarPorSituacao(StatusEquipamento situacao) {
-        return equipamentoRepository.findBySituacaoOrderByNomeAsc(situacao);
+        if (situacao == null) {
+            return listarTodos();
+        }
+        List<Equipamento> lista = equipamentoRepository.findBySituacaoOrderByNomeAsc(situacao);
+        return lista != null ? lista : List.of();
     }
 
     public List<Equipamento> listarPendentesInventario() {
-        return equipamentoRepository.findByConferidoInventarioFalseOrderByPatrimonioAsc();
+        List<Equipamento> lista = equipamentoRepository.findByConferidoInventarioFalseOrderByPatrimonioAsc();
+        return lista != null ? lista : List.of();
     }
 
     public Optional<Equipamento> buscarPorId(Long id) {

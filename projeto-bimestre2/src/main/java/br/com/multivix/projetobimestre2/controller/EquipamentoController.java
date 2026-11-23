@@ -41,6 +41,7 @@ public class EquipamentoController {
         } else {
             model.addAttribute("equipamentos", equipamentoService.listarTodos());
         }
+        model.addAttribute("categorias", categoriaService.listarTodas());
         model.addAttribute("situacoes", StatusEquipamento.values());
         return "equipamentos/lista";
     }
