@@ -14,6 +14,8 @@ public interface EquipamentoRepository extends JpaRepository<Equipamento, Long> 
     List<Equipamento> findBySituacaoOrderByNomeAsc(StatusEquipamento situacao);
     List<Equipamento> findAllByOrderByPatrimonioAsc();
     List<Equipamento> findByConferidoInventarioFalseOrderByPatrimonioAsc();
+    List<Equipamento> findBySetorIdOrderByPatrimonioAsc(Long setorId);
     long countBySituacao(StatusEquipamento situacao);
     long countByConferidoInventarioFalse();
+    boolean existsBySetorIdAndSituacaoNot(Long setorId, StatusEquipamento situacao);
 }

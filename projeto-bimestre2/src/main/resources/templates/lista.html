@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Logs de Auditoria')}"></head>
+<body>
+
+<aside th:replace="~{fragments/layout :: sidebar('auditoria')}"></aside>
+
+<div class="app-main">
+    <header th:replace="~{fragments/layout :: topbar('Logs de Auditoria')}"></header>
+
+    <main class="app-content">
+        <div th:replace="~{fragments/layout :: alertas}"></div>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <div>
+                <div class="eyebrow-label">RASTREABILIDADE IMUTÁVEL</div>
+                <h1 class="page-title">Trilha de Auditoria do Sistema</h1>
+                <p class="page-subtitle">Registro cronológico de operações críticas, anexos, cautelas, inventário e baixas patrimoniais.</p>
+            </div>
+            <form th:action="@{/auditoria}" method="get" class="d-flex gap-2">
+                <input type="text" name="patrimonio" th:value="${patrimonioFiltro}" class="form-control text-uppercase"
+                       placeholder="Filtrar por tombamento (ex: PAT-2026-0189)" style="min-width: 280px;">
+                <button type="submit" class="btn-figma-primary"><i class="bi bi-search"></i> Filtrar</button>
+                <a th:if="${patrimonioFiltro != null and !patrimonioFiltro.isBlank()}" th:href="@{/auditoria}" class="btn-figma-outline">Limpar</a>
+            </form>
+        </div>
+
+        <div class="figma-card">
+            <div class="table-responsive">
+                <table class="table table-figma mb-0">
+                    <thead>
+                    <tr>
+                        <th>DATA / HORA</th>
+                        <th>USUÁRIO / PERFIL</th>
+                        <th>MÓDULO</th>
+                        <th>AÇÃO</th>
+                        <th>PATRIMÔNIO</th>
+                        <th>DETALHES DA OPERAÇÃO</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${#lists.isEmpty(logs)}">
+                        <td colspan="6" class="text-center py-5 text-muted">Nenhum evento de auditoria encontrado.</td>
+                    </tr>
+                    <tr th:each="log : ${logs}">
+                        <td class="text-nowrap small text-secondary" th:text="${#temporals.format(log.dataHora, 'dd/MM/yyyy HH:mm:ss')}">26/11/2026 16:00:00</td>
+                        <td>
+                            <div class="fw-semibold text-dark small" th:text="${log.usuarioNome}">Usuário</div>
+                            <div class="text-muted" style="font-size: 0.72rem;" th:text="${log.usuarioEmail + ' (' + log.perfilUsuario + ')'}">email</div>
+                        </td>
+                        <td><span class="badge bg-light text-dark border" th:text="${log.modulo}">MODULO</span></td>
+                        <td class="fw-semibold small text-primary" th:text="${log.acao}">ACAO</td>
+                        <td>
+                            <span th:if="${log.patrimonioRef != null}" class="badge bg-dark-subtle text-dark" th:text="${log.patrimonioRef}">PAT</span>
+                            <span th:if="${log.patrimonioRef == null}" class="text-muted">-</span>
+                        </td>
+                        <td class="small text-secondary" th:text="${log.detalhes}">Detalhes</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

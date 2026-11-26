@@ -1,6 +1,7 @@
 package br.com.multivix.projetobimestre2.controller;
 
 import br.com.multivix.projetobimestre2.entity.StatusEquipamento;
+import br.com.multivix.projetobimestre2.exception.RegraNegocioException;
 import br.com.multivix.projetobimestre2.service.EquipamentoService;
 import br.com.multivix.projetobimestre2.service.MovimentacaoService;
 import br.com.multivix.projetobimestre2.service.SetorService;
@@ -9,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Locale;
@@ -56,9 +58,16 @@ public class HomeController {
     }
 
     @PostMapping("/inventario/conferir/{id}")
-    public String conferirItem(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        equipamentoService.marcarComoConferido(id);
-        redirectAttributes.addFlashAttribute("sucesso", "Bem patrimonial conferido no ciclo de inventário!");
+    public String conferirItem(@PathVariable Long id,
+                               @RequestParam(value = "statusDivergencia", required = false) String statusDivergencia,
+                               @RequestParam(value = "observacao", required = false) String observacao,
+                               RedirectAttributes redirectAttributes) {
+        try {
+            equipamentoService.marcarComoConferidoComDivergencia(id, statusDivergencia, observacao);
+            redirectAttributes.addFlashAttribute("sucesso", "Bem patrimonial conferido no ciclo de inventário!");
+        } catch (RegraNegocioException e) {
+            redirectAttributes.addFlashAttribute("erro", e.getMessage());
+        }
         return "redirect:/";
     }
 

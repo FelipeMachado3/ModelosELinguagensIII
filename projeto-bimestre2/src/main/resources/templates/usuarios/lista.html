@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Usuários e Permissões')}"></head>
+<body>
+
+<aside th:replace="~{fragments/layout :: sidebar('usuarios')}"></aside>
+
+<div class="app-main">
+    <header th:replace="~{fragments/layout :: topbar('Usuários e Permissões')}"></header>
+
+    <main class="app-content">
+        <div th:replace="~{fragments/layout :: alertas}"></div>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <div>
+                <div class="eyebrow-label">CONTROLE DE ACESSO E SECRETARIAS</div>
+                <h1 class="page-title">Usuários e Permissões</h1>
+                <p class="page-subtitle">Gerencie os operadores do sistema, níveis de acesso, histórico de login e vínculo com cada secretaria.</p>
+            </div>
+            <a th:href="@{/usuarios/novo}" class="btn-figma-primary">
+                <i class="bi bi-person-plus-fill"></i> Novo usuário
+            </a>
+        </div>
+
+        <div class="figma-card">
+            <div class="table-responsive">
+                <table class="table table-figma mb-0">
+                    <thead>
+                    <tr>
+                        <th>SERVIDOR / OPERADOR</th>
+                        <th>E-MAIL (LOGIN)</th>
+                        <th>PERFIL DE ACESSO</th>
+                        <th>SECRETARIA / SETOR</th>
+                        <th>ÚLTIMO LOGIN</th>
+                        <th>STATUS</th>
+                        <th class="text-end">AÇÕES</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="u : ${usuarios}">
+                        <td>
+                            <div class="fw-semibold text-dark" th:text="${u.nome}">Nome</div>
+                            <small class="text-muted" th:text="${u.matricula != null and !u.matricula.isBlank() ? 'Mat. ' + u.matricula : '-'}">Mat.</small>
+                        </td>
+                        <td class="text-secondary" th:text="${u.email}">email@local</td>
+                        <td>
+                            <span class="badge rounded-pill px-2 py-1"
+                                  th:classappend="${u.perfil.name() == 'MANAGER' ? 'bg-dark text-white' : (u.perfil.name() == 'ADMIN' ? 'bg-danger-subtle text-danger' : (u.perfil.name() == 'SECRETARIA' ? 'bg-primary-subtle text-primary' : (u.perfil.name() == 'OPERADOR' ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-dark')))}"
+                                  th:text="${u.perfil.descricao}">Perfil</span>
+                        </td>
+                        <td>
+                            <span th:if="${u.setor != null}" class="fw-semibold text-dark" th:text="${u.setor.identificacao}">Setor</span>
+                            <span th:if="${u.setor == null}" class="text-muted small">Administração Central (Todas)</span>
+                        </td>
+                        <td>
+                            <span th:if="${u.ultimoLogin != null}" class="text-dark small fw-medium"
+                                  th:text="${#temporals.format(u.ultimoLogin, 'dd/MM/yyyy HH:mm')}">26/11/2026 14:00</span>
+                            <span th:if="${u.ultimoLogin == null}" class="text-muted small fst-italic">Nunca acessou</span>
+                        </td>
+                        <td>
+                            <span th:if="${u.ativo}" class="badge bg-success-subtle text-success">Ativo</span>
+                            <span th:unless="${u.ativo}" class="badge bg-secondary-subtle text-secondary">Bloqueado</span>
+                            <span th:if="${u.primeiroAcessoAtivo}" class="badge bg-warning-subtle text-warning-emphasis ms-1" title="Usuário precisará trocar a senha no próximo login">1º Acesso</span>
+                        </td>
+                        <td class="text-end text-nowrap">
+                            <a th:href="@{/usuarios/editar/{id}(id=${u.id})}" class="btn btn-sm btn-light border text-primary" title="Editar usuário">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form th:action="@{/usuarios/status/{id}(id=${u.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-light border"
+                                        th:classappend="${u.ativo} ? 'text-warning' : 'text-success'"
+                                        th:title="${u.ativo} ? 'Bloquear acesso' : 'Desbloquear acesso'">
+                                    <i class="bi" th:classappend="${u.ativo} ? 'bi-lock' : 'bi-unlock'"></i>
+                                </button>
+                            </form>
+                            <form th:action="@{/usuarios/excluir/{id}(id=${u.id})}" method="post" class="d-inline"
+                                  onsubmit="return confirm('Tem certeza que deseja excluir este usuário permanentemente?');">
+                                <button type="submit" class="btn btn-sm btn-light border text-danger" title="Excluir usuário">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

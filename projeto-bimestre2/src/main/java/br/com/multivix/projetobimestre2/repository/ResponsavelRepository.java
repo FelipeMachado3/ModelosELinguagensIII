@@ -8,4 +8,5 @@ import java.util.List;
 public interface ResponsavelRepository extends JpaRepository<Responsavel, Long> {
     List<Responsavel> findAllByOrderBySetorNomeAscNomeAsc();
     List<Responsavel> findBySetorIdOrderByNomeAsc(Long setorId);
+    boolean existsBySetorIdAndAtivoTrue(Long setorId);
 }

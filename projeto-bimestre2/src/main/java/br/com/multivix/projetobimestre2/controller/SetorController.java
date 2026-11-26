@@ -26,13 +26,14 @@ public class SetorController {
     @GetMapping
     public String listar(Model model) {
         model.addAttribute("setores", setorService.listarTodos());
-        model.addAttribute("responsaveis", responsavelService.listarTodos());
         return "setores/lista";
     }
 
     @GetMapping("/novo")
     public String novo(Model model) {
         model.addAttribute("setor", new Setor());
+        model.addAttribute("setores", setorService.listarTodos());
+        model.addAttribute("responsaveis", responsavelService.listarTodos());
         return "setores/form";
     }
 
@@ -41,6 +42,8 @@ public class SetorController {
         return setorService.buscarPorId(id)
                 .map(setor -> {
                     model.addAttribute("setor", setor);
+                    model.addAttribute("setores", setorService.listarTodos());
+                    model.addAttribute("responsaveis", responsavelService.listarTodos());
                     return "setores/form";
                 })
                 .orElseGet(() -> {
@@ -55,16 +58,42 @@ public class SetorController {
                          Model model,
                          RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
+            model.addAttribute("setores", setorService.listarTodos());
+            model.addAttribute("responsaveis", responsavelService.listarTodos());
             return "setores/form";
         }
         try {
             setorService.salvar(setor);
-            redirectAttributes.addFlashAttribute("sucesso", "Setor administrativo salvo com sucesso!");
+            redirectAttributes.addFlashAttribute("sucesso", "Unidade administrativa salva com sucesso!");
             return "redirect:/setores";
         } catch (RegraNegocioException e) {
             model.addAttribute("erro", e.getMessage());
+            model.addAttribute("setores", setorService.listarTodos());
+            model.addAttribute("responsaveis", responsavelService.listarTodos());
             return "setores/form";
         }
+    }
+
+    @PostMapping("/{id}/inventario/abrir")
+    public String abrirInventario(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            setorService.abrirInventarioSetor(id);
+            redirectAttributes.addFlashAttribute("sucesso", "Inventário do setor aberto. Transferências definitivas congeladas.");
+        } catch (RegraNegocioException e) {
+            redirectAttributes.addFlashAttribute("erro", e.getMessage());
+        }
+        return "redirect:/setores";
+    }
+
+    @PostMapping("/{id}/inventario/encerrar")
+    public String encerrarInventario(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            setorService.encerrarInventarioSetor(id);
+            redirectAttributes.addFlashAttribute("sucesso", "Inventário do setor encerrado.");
+        } catch (RegraNegocioException e) {
+            redirectAttributes.addFlashAttribute("erro", e.getMessage());
+        }
+        return "redirect:/setores";
     }
 
     @PostMapping("/excluir/{id}")

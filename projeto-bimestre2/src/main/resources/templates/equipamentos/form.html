@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{fragments/layout :: head('Tombamento de Patrimônio')}"></head>
 <body>
 
@@ -8,7 +8,7 @@
 <div class="app-main">
     <header th:replace="~{fragments/layout :: topbar('Cadastro de Patrimônio')}"></header>
 
-    <main class="app-content" style="max-width: 920px;">
+    <main class="app-content" style="max-width: 960px;">
         <div th:replace="~{fragments/layout :: alertas}"></div>
 
         <div class="mb-4">
@@ -17,7 +17,12 @@
             <p class="page-subtitle">Preencha os dados de identificação técnica e tombamento do órgão.</p>
         </div>
 
-        <div class="figma-card p-4">
+        <div th:if="${equipamento.dadosCriticosBloqueados}" class="alert alert-warning border-0 shadow-sm mb-4" style="border-radius: 10px;">
+            <i class="bi bi-lock-fill me-2"></i>
+            <strong>Proteção de Integridade:</strong> Este bem está atualmente <strong th:text="${equipamento.situacao.descricao}">Emprestado/Baixado</strong>. Campos críticos (tombamento, número de série e setor) estão bloqueados para edição.
+        </div>
+
+        <div class="figma-card p-4 mb-4">
             <form th:action="@{/equipamentos/salvar}" th:object="${equipamento}" method="post">
                 <input type="hidden" th:field="*{id}"/>
 
@@ -25,6 +30,7 @@
                     <div class="col-md-4">
                         <label for="patrimonio" class="form-label fw-semibold small">Nº Tombamento / Patrimônio *</label>
                         <input type="text" id="patrimonio" th:field="*{patrimonio}" class="form-control text-uppercase"
+                               th:readonly="${equipamento.dadosCriticosBloqueados}"
                                th:classappend="${#fields.hasErrors('patrimonio')} ? 'is-invalid'"
                                placeholder="Ex: PAT-2026-0006">
                         <div class="invalid-feedback" th:errors="*{patrimonio}"></div>
@@ -33,6 +39,7 @@
                     <div class="col-md-8">
                         <label for="nome" class="form-label fw-semibold small">Nome / Especificação Técnica *</label>
                         <input type="text" id="nome" th:field="*{nome}" class="form-control"
+                               th:readonly="${equipamento.situacao != null and equipamento.situacao.name() == 'BAIXADO'}"
                                th:classappend="${#fields.hasErrors('nome')} ? 'is-invalid'"
                                placeholder="Ex: Notebook Corporativo 15.6 Core i7">
                         <div class="invalid-feedback" th:errors="*{nome}"></div>
@@ -50,7 +57,9 @@
 
                     <div class="col-md-4">
                         <label for="numeroSerie" class="form-label fw-semibold small">Número de Série (S/N)</label>
-                        <input type="text" id="numeroSerie" th:field="*{numeroSerie}" class="form-control" placeholder="Ex: BR-99812A">
+                        <input type="text" id="numeroSerie" th:field="*{numeroSerie}" class="form-control"
+                               th:readonly="${equipamento.dadosCriticosBloqueados}"
+                               placeholder="Ex: BR-99812A">
                     </div>
 
                     <div class="col-md-6">
@@ -64,32 +73,133 @@
                     </div>
 
                     <div class="col-md-6">
+                        <label for="setor" class="form-label fw-semibold small">Secretaria / Setor de Lotação</label>
+                        <select id="setor" th:field="*{setor}" class="form-select">
+                            <option value="">-- Sem setor definido --</option>
+                            <option th:each="s : ${setores}" th:value="${s.id}" th:text="${s.identificacao}">Setor</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
                         <label for="dataAquisicao" class="form-label fw-semibold small">Data de Aquisição / Tombamento</label>
                         <input type="date" id="dataAquisicao" th:field="*{dataAquisicao}" class="form-control">
                     </div>
 
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label for="estadoConservacao" class="form-label fw-semibold small">Estado de Conservação *</label>
                         <select id="estadoConservacao" th:field="*{estadoConservacao}" class="form-select">
                             <option th:each="est : ${estadosConservacao}" th:value="${est}" th:text="${est.descricao}">Bom</option>
                         </select>
                     </div>
 
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label for="situacao" class="form-label fw-semibold small">Situação Patrimonial *</label>
                         <select id="situacao" th:field="*{situacao}" class="form-select">
-                            <option th:each="sit : ${situacoes}" th:value="${sit}" th:text="${sit.descricao}">Disponível</option>
+                            <option th:each="sit : ${situacoes}" th:if="${sit.name() != 'BAIXADO' or (equipamento.situacao != null and equipamento.situacao.name() == 'BAIXADO')}"
+                                    th:value="${sit}" th:text="${sit.descricao}">Disponível</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
                     <a th:href="@{/equipamentos}" class="btn-figma-outline">Cancelar</a>
-                    <button type="submit" class="btn-figma-primary">
+                    <button th:if="${equipamento.situacao == null or equipamento.situacao.name() != 'BAIXADO'}" type="submit" class="btn-figma-primary">
                         <i class="bi bi-check-lg"></i> Salvar Patrimônio
                     </button>
                 </div>
             </form>
+        </div>
+
+        <!-- GESTAO DE ANEXOS E LAUDOS DO EQUIPAMENTO -->
+        <div th:if="${equipamento.id != null}" class="figma-card p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h2 class="h6 fw-bold text-dark mb-1"><i class="bi bi-paperclip text-primary me-1"></i> Documentos e Laudos Anexados</h2>
+                    <p class="text-muted small mb-0">Formatos aceitos: PDF, JPG, JPEG, PNG, DOCX, XLSX (máx. 10 MB, até 5 arquivos).</p>
+                </div>
+            </div>
+
+            <form th:action="@{/anexos/equipamento/{id}(id=${equipamento.id})}" method="post" enctype="multipart/form-data" class="row g-2 align-items-end mb-3">
+                <div class="col-md-4">
+                    <label class="form-label small fw-semibold">Tipo de Documento</label>
+                    <select name="tipoDocumento" class="form-select form-select-sm">
+                        <option value="NOTA_FISCAL">Nota Fiscal / Aquisição</option>
+                        <option value="LAUDO_TECNICO">Laudo Técnico / Manutenção</option>
+                        <option value="LAUDO_BAIXA">Laudo de Baixa Patrimonial</option>
+                        <option value="FOTO_BEM">Foto do Equipamento</option>
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label small fw-semibold">Arquivo *</label>
+                    <input type="file" name="arquivo" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx" required>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-sm btn-primary w-100 fw-semibold">
+                        <i class="bi bi-upload me-1"></i> Anexar Arquivo
+                    </button>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered mb-0 align-middle">
+                    <thead class="table-light small">
+                    <tr>
+                        <th>ARQUIVO</th>
+                        <th>TIPO</th>
+                        <th>ENVIADO POR</th>
+                        <th>DATA</th>
+                        <th class="text-end">AÇÕES</th>
+                    </tr>
+                    </thead>
+                    <tbody class="small">
+                    <tr th:if="${#lists.isEmpty(anexos)}">
+                        <td colspan="5" class="text-center text-muted py-3">Nenhum documento anexado a este bem.</td>
+                    </tr>
+                    <tr th:each="anexo : ${anexos}">
+                        <td class="fw-semibold" th:text="${anexo.nomeOriginal}">laudo.pdf</td>
+                        <td><span class="badge bg-light text-dark border" th:text="${anexo.tipoDocumento}">TIPO</span></td>
+                        <td th:text="${anexo.enviadoPorNome}">Usuário</td>
+                        <td th:text="${#temporals.format(anexo.dataUpload, 'dd/MM/yyyy HH:mm')}">26/11/2026</td>
+                        <td class="text-end text-nowrap">
+                            <a th:href="@{/anexos/download/{id}(id=${anexo.id})}" class="btn btn-sm btn-light border text-primary" title="Baixar">
+                                <i class="bi bi-download"></i>
+                            </a>
+                            <form th:if="${!anexo.bloqueadoExclusao}" th:action="@{/anexos/excluir/{id}(id=${anexo.id})}" method="post" class="d-inline"
+                                  onsubmit="return confirm('Remover este anexo?');">
+                                <input type="hidden" name="redirectTo" th:value="'/equipamentos/editar/' + ${equipamento.id}"/>
+                                <button type="submit" class="btn btn-sm btn-light border text-danger" title="Excluir anexo">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- BAIXA PATRIMONIAL EXCLUSIVA PARA MANAGER -->
+        <div th:if="${equipamento.id != null and equipamento.situacao.name() != 'BAIXADO'}"
+             sec:authorize="hasRole('MANAGER')" class="figma-card p-4 border-danger-subtle">
+            <h2 class="h6 fw-bold text-danger mb-1"><i class="bi bi-exclamation-octagon me-1"></i> Baixa Patrimonial (Exclusivo Manager)</h2>
+            <p class="text-muted small mb-3">A baixa torna o bem inservível/bloqueado permanentemente. Exige anexo prévio do tipo <strong>LAUDO_BAIXA</strong>.</p>
+            <form th:action="@{/equipamentos/baixar/{id}(id=${equipamento.id})}" method="post" class="row g-2 align-items-end"
+                  onsubmit="return confirm('Confirma a baixa definitiva deste patrimônio? Esta ação não poderá ser desfeita.');">
+                <div class="col-md-9">
+                    <label class="form-label small fw-semibold">Justificativa / Parecer da Baixa *</label>
+                    <input type="text" name="motivoBaixa" class="form-control form-control-sm" placeholder="Ex: Equipamento obsoleto sem reparo conforme laudo técnico nº 42/2026" required>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-sm btn-danger w-100 fw-semibold">
+                        <i class="bi bi-archive-fill me-1"></i> Efetivar Baixa
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div th:if="${equipamento.situacao != null and equipamento.situacao.name() == 'BAIXADO'}" class="alert alert-secondary border-0">
+            <strong>Bem Baixado em <span th:text="${equipamento.dataBaixa != null ? #temporals.format(equipamento.dataBaixa, 'dd/MM/yyyy') : '-'}">data</span>:</strong>
+            <span th:text="${equipamento.motivoBaixa}">Motivo</span>
         </div>
     </main>
 </div>

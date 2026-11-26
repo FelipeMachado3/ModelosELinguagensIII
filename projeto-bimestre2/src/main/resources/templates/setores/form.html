@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/layout :: head('Cadastro de Setor')}"></head>
+<head th:replace="~{fragments/layout :: head('Cadastro de Secretaria ou Setor')}"></head>
 <body>
 
 <aside th:replace="~{fragments/layout :: sidebar('setores')}"></aside>
 
 <div class="app-main">
-    <header th:replace="~{fragments/layout :: topbar('Cadastro de Setor')}"></header>
+    <header th:replace="~{fragments/layout :: topbar('Cadastro de Secretaria / Setor')}"></header>
 
     <main class="app-content" style="max-width: 780px;">
         <div th:replace="~{fragments/layout :: alertas}"></div>
 
         <div class="mb-4">
             <div class="eyebrow-label">ESTRUTURA ORGANIZACIONAL</div>
-            <h1 class="page-title" th:text="${setor.id == null} ? 'Incluir Novo Setor' : 'Editar Setor'">Setor</h1>
-            <p class="page-subtitle">Informe a sigla, nome oficial e localização da unidade administrativa.</p>
+            <h1 class="page-title" th:text="${setor.id == null} ? 'Incluir Secretaria ou Setor' : 'Editar Unidade Administrativa'">Setor</h1>
+            <p class="page-subtitle">Cadastre secretarias principais ou departamentos vinculados a uma secretaria.</p>
         </div>
 
         <div class="figma-card p-4">
@@ -22,16 +22,33 @@
                 <input type="hidden" th:field="*{id}"/>
 
                 <div class="row g-3">
+                    <div class="col-md-5">
+                        <label for="tipoUnidade" class="form-label fw-semibold small">Tipo de Unidade *</label>
+                        <select id="tipoUnidade" th:field="*{tipoUnidade}" class="form-select">
+                            <option value="SECRETARIA">Secretaria Principal</option>
+                            <option value="DEPARTAMENTO">Departamento / Coordenação</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-7">
+                        <label for="secretariaPai" class="form-label fw-semibold small">Secretaria Superior (se for Departamento)</label>
+                        <select id="secretariaPai" th:field="*{secretariaPai}" class="form-select">
+                            <option value="">-- Nenhuma (Unidade Principal) --</option>
+                            <option th:each="s : ${setores}" th:if="${setor.id == null or s.id != setor.id}"
+                                    th:value="${s.id}" th:text="${s.sigla + ' - ' + s.nome}">SECADM</option>
+                        </select>
+                    </div>
+
                     <div class="col-md-4">
-                        <label for="sigla" class="form-label fw-semibold small">Sigla do Setor *</label>
+                        <label for="sigla" class="form-label fw-semibold small">Sigla *</label>
                         <input type="text" id="sigla" th:field="*{sigla}" class="form-control text-uppercase"
                                th:classappend="${#fields.hasErrors('sigla')} ? 'is-invalid'"
-                               placeholder="Ex: SECADM, GAB, CTI">
+                               placeholder="Ex: SECADM, CTI">
                         <div class="invalid-feedback" th:errors="*{sigla}"></div>
                     </div>
 
                     <div class="col-md-8">
-                        <label for="nome" class="form-label fw-semibold small">Nome Oficial do Setor *</label>
+                        <label for="nome" class="form-label fw-semibold small">Nome Oficial *</label>
                         <input type="text" id="nome" th:field="*{nome}" class="form-control"
                                th:classappend="${#fields.hasErrors('nome')} ? 'is-invalid'"
                                placeholder="Ex: Secretaria Municipal de Administração">
@@ -54,7 +71,7 @@
                 <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
                     <a th:href="@{/setores}" class="btn-figma-outline">Cancelar</a>
                     <button type="submit" class="btn-figma-primary">
-                        <i class="bi bi-check-lg"></i> Salvar Setor
+                        <i class="bi bi-check-lg"></i> Salvar Unidade
                     </button>
                 </div>
             </form>

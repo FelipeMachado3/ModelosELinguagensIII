@@ -38,6 +38,9 @@ public class Responsavel {
     @JoinColumn(name = "setor_id", nullable = false)
     private Setor setor;
 
+    @Column(nullable = false)
+    private boolean ativo = true;
+
     public Responsavel() {
     }
 
@@ -47,55 +50,23 @@ public class Responsavel {
         this.cargo = cargo;
         this.email = email;
         this.setor = setor;
+        this.ativo = true;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public String getMatricula() {
-        return matricula;
-    }
-
-    public void setMatricula(String matricula) {
-        this.matricula = matricula;
-    }
-
-    public String getCargo() {
-        return cargo;
-    }
-
-    public void setCargo(String cargo) {
-        this.cargo = cargo;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public Setor getSetor() {
-        return setor;
-    }
-
-    public void setSetor(Setor setor) {
-        this.setor = setor;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
+    public String getMatricula() { return matricula; }
+    public void setMatricula(String matricula) { this.matricula = matricula; }
+    public String getCargo() { return cargo; }
+    public void setCargo(String cargo) { this.cargo = cargo; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public Setor getSetor() { return setor; }
+    public void setSetor(Setor setor) { this.setor = setor; }
+    public boolean isAtivo() { return ativo; }
+    public void setAtivo(boolean ativo) { this.ativo = ativo; }
 
     public String getNomeSetor() {
         return setor != null ? setor.getNome() : "-";

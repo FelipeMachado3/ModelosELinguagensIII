@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{fragments/layout :: head('Empréstimos e Cautelas')}"></head>
 <body>
 
@@ -15,9 +15,10 @@
             <div>
                 <div class="eyebrow-label">CONTROLE DE CAUTELAS</div>
                 <h1 class="page-title">Empréstimos e Devoluções</h1>
-                <p class="page-subtitle">Acompanhamento de retiradas por setor, datas previstas e termos de responsabilidade.</p>
+                <p class="page-subtitle">Acompanhamento de retiradas por secretaria/setor, prorrogações (máx. 2x) e termos de responsabilidade.</p>
             </div>
-            <a th:href="@{/movimentacoes/nova}" class="btn-figma-primary">
+            <a sec:authorize="hasAnyRole('MANAGER', 'ADMIN', 'SECRETARIA', 'OPERADOR')"
+               th:href="@{/movimentacoes/nova}" class="btn-figma-primary">
                 <i class="bi bi-plus-lg"></i> Registrar empréstimo
             </a>
         </div>
@@ -56,7 +57,11 @@
                         <td colspan="8" class="text-center py-5 text-muted">Nenhuma movimentação registrada.</td>
                     </tr>
                     <tr th:each="mov : ${movimentacoes}" class="linha-filtro">
-                        <td class="fw-bold text-primary" th:text="${mov.numeroTermo}">TC-2026-0001</td>
+                        <td>
+                            <div class="fw-bold text-primary" th:text="${mov.numeroTermo}">TC-2026-0001</div>
+                            <div th:if="${mov.quantidadeProrrogacoes > 0}" class="text-muted" style="font-size: 0.7rem;"
+                                 th:text="'Prorrogado ' + ${mov.quantidadeProrrogacoes} + '/2'">Prorrogado</div>
+                        </td>
                         <td>
                             <div class="d-flex align-items-center gap-3">
                                 <div class="item-icon-box"><i class="bi bi-pc-display"></i></div>
@@ -78,7 +83,8 @@
                             <span th:if="${mov.dataDevolucao == null}" class="text-muted">-</span>
                         </td>
                         <td>
-                            <span th:if="${!mov.ativa}" class="badge rounded-pill bg-success-subtle text-success fw-semibold px-2 py-1">Devolvido</span>
+                            <span th:if="${!mov.ativa and !mov.devolvidoComAvaria}" class="badge rounded-pill bg-success-subtle text-success fw-semibold px-2 py-1">Devolvido</span>
+                            <span th:if="${!mov.ativa and mov.devolvidoComAvaria}" class="badge rounded-pill bg-warning-subtle text-warning fw-semibold px-2 py-1">Devolvido c/ Avaria</span>
                             <span th:if="${mov.atrasada}" class="badge rounded-pill bg-danger-subtle text-danger fw-semibold px-2 py-1">Atrasado</span>
                             <span th:if="${mov.ativa and !mov.atrasada}" class="badge rounded-pill bg-primary-subtle text-primary fw-semibold px-2 py-1">Em Cautela</span>
                         </td>
@@ -86,13 +92,23 @@
                             <a th:href="@{/movimentacoes/termo/{id}(id=${mov.id})}" class="btn btn-sm btn-light border text-dark" title="Termo Oficial">
                                 <i class="bi bi-printer"></i>
                             </a>
-                            <form th:if="${mov.ativa}" th:action="@{/movimentacoes/devolver/{id}(id=${mov.id})}" method="post" class="d-inline"
-                                  onsubmit="return confirm('Confirmar a devolução deste equipamento ao almoxarifado?');">
-                                <button type="submit" class="btn btn-sm btn-success fw-semibold">
-                                    <i class="bi bi-check2-circle me-1"></i>Devolver
-                                </button>
-                            </form>
-                            <form th:if="${!mov.ativa}" th:action="@{/movimentacoes/excluir/{id}(id=${mov.id})}" method="post" class="d-inline"
+                            <button sec:authorize="hasAnyRole('MANAGER', 'ADMIN', 'SECRETARIA', 'OPERADOR')"
+                                    th:if="${mov.ativa}" type="button" class="btn btn-sm btn-light border text-secondary"
+                                    data-bs-toggle="modal" th:data-bs-target="'#modalAnexosMov' + ${mov.id}" title="Anexos e Evidências">
+                                <i class="bi bi-paperclip"></i>
+                            </button>
+                            <button sec:authorize="hasAnyRole('MANAGER', 'ADMIN', 'SECRETARIA', 'OPERADOR')"
+                                    th:if="${mov.podeProrrogar()}" type="button" class="btn btn-sm btn-light border text-primary"
+                                    data-bs-toggle="modal" th:data-bs-target="'#modalProrrogar' + ${mov.id}" title="Prorrogar prazo">
+                                <i class="bi bi-calendar-plus"></i>
+                            </button>
+                            <button sec:authorize="hasAnyRole('MANAGER', 'ADMIN', 'SECRETARIA', 'OPERADOR')"
+                                    th:if="${mov.ativa}" type="button" class="btn btn-sm btn-success fw-semibold"
+                                    data-bs-toggle="modal" th:data-bs-target="'#modalDevolver' + ${mov.id}">
+                                <i class="bi bi-check2-circle me-1"></i>Devolver
+                            </button>
+                            <form sec:authorize="hasAnyRole('MANAGER', 'ADMIN', 'SECRETARIA')"
+                                  th:if="${!mov.ativa}" th:action="@{/movimentacoes/excluir/{id}(id=${mov.id})}" method="post" class="d-inline"
                                   onsubmit="return confirm('Excluir este registro histórico já encerrado?');">
                                 <button type="submit" class="btn btn-sm btn-light border text-danger" title="Excluir histórico">
                                     <i class="bi bi-trash"></i>
@@ -104,6 +120,109 @@
                 </table>
             </div>
         </div>
+
+        <!-- MODAIS DE ANEXOS, VISTORIA NA DEVOLUCAO E PRORROGACAO -->
+        <th:block th:each="mov : ${movimentacoes}" th:if="${mov.ativa}">
+            <div class="modal fade" th:id="'modalAnexosMov' + ${mov.id}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow">
+                        <div class="modal-header">
+                            <h5 class="modal-title fw-bold">Anexos da Cautela — <span th:text="${mov.numeroTermo}">TC</span></h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form th:action="@{/anexos/movimentacao/{id}(id=${mov.id})}" method="post" enctype="multipart/form-data" class="mb-3">
+                                <div class="mb-2">
+                                    <label class="form-label small fw-semibold">Tipo de Anexo</label>
+                                    <select name="tipoDocumento" class="form-select form-select-sm">
+                                        <option value="TERMO_CAUTELA">Termo Assinado</option>
+                                        <option value="EVIDENCIA_AVARIA">Evidência de Avaria (Foto / Relatório)</option>
+                                    </select>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small fw-semibold">Arquivo (PDF, JPG, PNG, DOCX, XLSX — até 10MB)</label>
+                                    <input type="file" name="arquivo" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx" required>
+                                </div>
+                                <button type="submit" class="btn btn-sm btn-primary w-100 fw-semibold">Enviar Anexo</button>
+                            </form>
+                            <div class="small fw-semibold mb-1">Arquivos já vinculados:</div>
+                            <ul class="list-group list-group-flush small">
+                                <li th:if="${#lists.isEmpty(anexosPorMovimentacao[mov.id])}" class="list-group-item text-muted px-0">Nenhum anexo enviado.</li>
+                                <li th:each="ax : ${anexosPorMovimentacao[mov.id]}" class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                    <span th:text="${ax.nomeOriginal + ' (' + ax.tipoDocumento + ')'}">arquivo.pdf</span>
+                                    <a th:href="@{/anexos/download/{id}(id=${ax.id})}" class="btn btn-sm btn-light border"><i class="bi bi-download"></i></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" th:id="'modalDevolver' + ${mov.id}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <form th:action="@{/movimentacoes/devolver/{id}(id=${mov.id})}" method="post" class="modal-content border-0 shadow">
+                        <div class="modal-header">
+                            <h5 class="modal-title fw-bold">Registrar Devolução — <span th:text="${mov.numeroTermo}">TC</span></h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="small text-muted mb-3">
+                                Bem patrimonial: <strong class="text-dark" th:text="${mov.equipamento.patrimonio + ' - ' + mov.equipamento.nome}">Equipamento</strong>
+                            </p>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small">Estado de Conservação na Entrega *</label>
+                                <select name="estadoConservacao" class="form-select">
+                                    <option value="NOVO">Novo (Impecável)</option>
+                                    <option value="BOM" selected>Bom (Uso normal)</option>
+                                    <option value="REGULAR">Regular (Desgaste visível)</option>
+                                    <option value="RUIM">Ruim (Com avaria -> vai para Manutenção)</option>
+                                    <option value="PESSIMO">Péssimo (Inoperante -> vai para Manutenção)</option>
+                                </select>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" name="avariaInformada" value="true" th:id="'avaria' + ${mov.id}">
+                                <label class="form-check-label small fw-semibold text-danger" th:for="'avaria' + ${mov.id}">
+                                    Registrar devolução com avaria (exige descrição e anexo de evidência prévio)
+                                </label>
+                            </div>
+                            <div>
+                                <label class="form-label fw-semibold small">Observação / Descrição da Vistoria</label>
+                                <input type="text" name="observacaoDevolucao" class="form-control" placeholder="Ex: Entregue sem danos ou descreva a avaria">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn-figma-outline" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-success fw-semibold">Confirmar Baixa no Almoxarifado</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="modal fade" th:id="'modalProrrogar' + ${mov.id}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <form th:action="@{/movimentacoes/prorrogar/{id}(id=${mov.id})}" method="post" class="modal-content border-0 shadow">
+                        <div class="modal-header">
+                            <h5 class="modal-title fw-bold">Prorrogar Prazo (<span th:text="${mov.quantidadeProrrogacoes + 1}">1</span>/2) — <span th:text="${mov.numeroTermo}">TC</span></h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small">Nova Data Prevista de Devolução *</label>
+                                <input type="date" name="novaDataPrevista" class="form-control" required>
+                            </div>
+                            <div>
+                                <label class="form-label fw-semibold small">Justificativa da Prorrogação *</label>
+                                <input type="text" name="motivo" class="form-control" placeholder="Ex: Continuidade de vistoria externa" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn-figma-outline" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn-figma-primary">Salvar Novo Prazo</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </th:block>
     </main>
 </div>
 

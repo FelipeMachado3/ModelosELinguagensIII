@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{fragments/layout :: head('Patrimônio e Tombamento')}"></head>
 <body>
 
@@ -15,9 +15,9 @@
             <div>
                 <div class="eyebrow-label">INVENTÁRIO DE BENS PERMANENTES</div>
                 <h1 class="page-title">Patrimônio e Equipamentos</h1>
-                <p class="page-subtitle">Controle de tombamento, número de série, estado de conservação e disponibilidade.</p>
+                <p class="page-subtitle">Controle de tombamento, número de série, conferência rápida de inventário e disponibilidade.</p>
             </div>
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2" sec:authorize="hasAnyRole('MANAGER', 'ADMIN', 'SECRETARIA', 'OPERADOR')">
                 <a th:href="@{/movimentacoes/nova}" class="btn-figma-outline">
                     <i class="bi bi-arrow-left-right"></i> Registrar empréstimo
                 </a>
@@ -53,16 +53,18 @@
                         <th>EQUIPAMENTO / ESPECIFICAÇÃO</th>
                         <th>Nº DE SÉRIE</th>
                         <th>CATEGORIA</th>
+                        <th>SETOR</th>
                         <th>CONSERVAÇÃO</th>
+                        <th>INVENTÁRIO</th>
                         <th>SITUAÇÃO</th>
                         <th class="text-end">AÇÕES</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:if="${equipamentos == null or #lists.isEmpty(equipamentos)}">
-                        <td colspan="7" class="text-center py-5 text-muted">Nenhum bem patrimonial encontrado.</td>
+                    <tr th:if="${#lists.isEmpty(equipamentos)}">
+                        <td colspan="9" class="text-center py-5 text-muted">Nenhum bem patrimonial encontrado.</td>
                     </tr>
-                    <tr th:each="eq : ${equipamentos != null ? equipamentos : #lists.emptyList()}" class="linha-filtro">
+                    <tr th:each="eq : ${equipamentos}" class="linha-filtro">
                         <td>
                             <span class="badge bg-dark-subtle text-dark fw-bold px-2 py-1" style="font-size: 0.8rem;"
                                   th:text="${eq.patrimonio}">PAT-2026-0001</span>
@@ -79,25 +81,39 @@
                         </td>
                         <td class="text-secondary small" th:text="${eq.numeroSerie ?: '-'}">SN123</td>
                         <td class="text-secondary" th:text="${eq.categoria != null ? eq.categoria.nome : '-'}">Informática</td>
-                        <td class="text-secondary" th:text="${eq.estadoConservacao != null ? eq.estadoConservacao.descricao : '-'}">Bom</td>
+                        <td class="text-secondary small" th:text="${eq.setor != null ? eq.setor.sigla : '-'}">SECADM</td>
+                        <td class="text-secondary" th:text="${eq.estadoConservacao != null ? eq.estadoConservacao.name() : '-'}">BOM</td>
+                        <td>
+                            <form sec:authorize="hasAnyRole('MANAGER', 'ADMIN', 'SECRETARIA', 'OPERADOR')"
+                                  th:action="@{/equipamentos/conferir/{id}(id=${eq.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm border"
+                                        th:classappend="${eq.conferidoInventario} ? 'btn-success-subtle text-success border-success-subtle' : 'btn-light text-warning'"
+                                        title="Clique para registrar conferência física de inventário">
+                                    <i class="bi" th:classappend="${eq.conferidoInventario} ? 'bi-check2-square me-1' : 'bi-square me-1'"></i>
+                                    <span th:text="${eq.conferidoInventario} ? 'Conferido' : 'Pendente'">Status</span>
+                                </button>
+                            </form>
+                            <span sec:authorize="hasRole('AUDITOR')" class="small fw-semibold"
+                                  th:classappend="${eq.conferidoInventario} ? 'text-success' : 'text-warning'"
+                                  th:text="${eq.conferidoInventario} ? 'Conferido' : 'Pendente'">Status</span>
+                        </td>
                         <td>
                             <span th:if="${eq.situacao != null}"
                                   class="badge rounded-pill px-2 py-1"
                                   th:classappend="${eq.situacao.badgeClass}"
                                   th:text="${eq.situacao.descricao}">Disponível</span>
-                            <span th:if="${eq.situacao == null}"
-                                  class="badge rounded-pill px-2 py-1 bg-light text-dark">-</span>
                         </td>
-                        <td class="text-end text-nowrap">
+                        <td class="text-end text-nowrap" sec:authorize="hasAnyRole('MANAGER', 'ADMIN', 'SECRETARIA', 'OPERADOR')">
                             <a th:if="${eq.situacao != null and eq.situacao.disponivelParaCautela}"
                                th:href="@{/movimentacoes/nova(equipamentoId=${eq.id})}"
                                class="btn btn-sm btn-success fw-semibold" title="Emprestar equipamento">
                                 <i class="bi bi-box-arrow-up-right me-1"></i>Emprestar
                             </a>
-                            <a th:href="@{/equipamentos/editar/{id}(id=${eq.id})}" class="btn btn-sm btn-light border text-primary" title="Editar">
+                            <a th:href="@{/equipamentos/editar/{id}(id=${eq.id})}" class="btn btn-sm btn-light border text-primary" title="Editar / Anexos / Baixa">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <form th:action="@{/equipamentos/excluir/{id}(id=${eq.id})}" method="post" class="d-inline"
+                            <form sec:authorize="hasAnyRole('MANAGER', 'ADMIN', 'SECRETARIA')"
+                                  th:action="@{/equipamentos/excluir/{id}(id=${eq.id})}" method="post" class="d-inline"
                                   onsubmit="return confirm('Confirma a exclusão deste bem patrimonial?');">
                                 <button type="submit" class="btn btn-sm btn-light border text-danger" title="Excluir">
                                     <i class="bi bi-trash"></i>

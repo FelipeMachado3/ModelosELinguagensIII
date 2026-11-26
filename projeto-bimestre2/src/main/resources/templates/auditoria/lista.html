@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Logs de Auditoria')}"></head>
+<body>
+
+<aside th:replace="~{fragments/layout :: sidebar('auditoria')}"></aside>
+
+<div class="app-main">
+    <header th:replace="~{fragments/layout :: topbar('Logs de Auditoria')}"></header>
+
+    <main class="app-content" th:with="listaLogs=${logs != null ? logs : (auditorias != null ? auditorias : registros)}">
+        <div th:replace="~{fragments/layout :: alertas}"></div>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <div>
+                <div class="eyebrow-label">RASTREABILIDADE E CONFORMIDADE</div>
+                <h1 class="page-title">Logs de Auditoria</h1>
+                <p class="page-subtitle">Histórico imutável de operações críticas realizadas no sistema patrimonial.</p>
+            </div>
+        </div>
+
+        <div class="figma-card">
+            <div class="p-3 p-md-4 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <span class="small fw-semibold text-muted">Registros de eventos do sistema</span>
+                <div class="position-relative" style="min-width: 280px;">
+                    <i class="bi bi-search position-absolute text-muted" style="left: 12px; top: 50%; transform: translateY(-50%); font-size: 0.85rem;"></i>
+                    <input type="text" id="buscaAuditoria" class="form-control search-input-figma"
+                           placeholder="Filtrar por usuário, ação ou entidade...">
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-figma mb-0" id="tabelaAuditoria">
+                    <thead>
+                    <tr>
+                        <th>DATA / HORA</th>
+                        <th>USUÁRIO</th>
+                        <th>AÇÃO</th>
+                        <th>ENTIDADE</th>
+                        <th>DETALHES</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${listaLogs == null or #lists.isEmpty(listaLogs)}">
+                        <td colspan="5" class="text-center py-5 text-muted">Nenhum registro de auditoria encontrado.</td>
+                    </tr>
+                    <tr th:each="log : ${listaLogs}" class="linha-filtro">
+                        <td class="text-secondary text-nowrap"
+                            th:text="${log.dataHora != null ? #temporals.format(log.dataHora, 'dd/MM/yyyy HH:mm:ss') : '-'}">26/11/2026 16:00:00</td>
+                        <td>
+                            <div class="fw-semibold text-dark" th:text="${log.usuarioNome ?: 'Sistema'}">Usuário</div>
+                            <div class="text-muted" style="font-size: 0.75rem;" th:text="${log.usuarioEmail ?: ''}">email</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary-subtle text-primary fw-semibold px-2 py-1"
+                                  th:text="${log.acao}">ACAO</span>
+                        </td>
+                        <td class="text-dark fw-medium"
+                            th:text="${(log.entidade ?: '-') + (log.entidadeId != null ? ' #' + log.entidadeId : '')}">Entidade</td>
+                        <td class="text-secondary small" th:text="${log.detalhes ?: '-'}">Detalhes</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+<script>
+    document.getElementById('buscaAuditoria')?.addEventListener('input', function () {
+        const termo = this.value.toLowerCase().trim();
+        document.querySelectorAll('#tabelaAuditoria tbody tr.linha-filtro').forEach(tr => {
+            tr.style.display = (!termo || tr.innerText.toLowerCase().includes(termo)) ? '' : 'none';
+        });
+    });
+</script>
+</body>
+</html>

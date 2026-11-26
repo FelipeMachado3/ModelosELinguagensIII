@@ -1,4 +1,3 @@
-
 package br.com.multivix.projetobimestre2.entity;
 
 import jakarta.persistence.*;
@@ -7,6 +6,8 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "movimentacao")
 public class Movimentacao {
+
+    public static final int MAX_PRORROGACOES = 2;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,75 +33,38 @@ public class Movimentacao {
     @Column(name = "numero_termo")
     private String numeroTermo;
 
-    @Column(length = 255)
+    @Column(length = 500)
     private String observacao;
+
+    @Column(name = "quantidade_prorrogacoes", nullable = false)
+    private int quantidadeProrrogacoes = 0;
+
+    @Column(name = "devolvido_com_avaria", nullable = false)
+    private boolean devolvidoComAvaria = false;
 
     public Movimentacao() {
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Equipamento getEquipamento() {
-        return equipamento;
-    }
-
-    public void setEquipamento(Equipamento equipamento) {
-        this.equipamento = equipamento;
-    }
-
-    public Responsavel getResponsavel() {
-        return responsavel;
-    }
-
-    public void setResponsavel(Responsavel responsavel) {
-        this.responsavel = responsavel;
-    }
-
-    public LocalDate getDataRetirada() {
-        return dataRetirada;
-    }
-
-    public void setDataRetirada(LocalDate dataRetirada) {
-        this.dataRetirada = dataRetirada;
-    }
-
-    public LocalDate getDataDevolucao() {
-        return dataDevolucao;
-    }
-
-    public void setDataDevolucao(LocalDate dataDevolucao) {
-        this.dataDevolucao = dataDevolucao;
-    }
-
-    public LocalDate getDataPrevistaDevolucao() {
-        return dataPrevistaDevolucao;
-    }
-
-    public void setDataPrevistaDevolucao(LocalDate dataPrevistaDevolucao) {
-        this.dataPrevistaDevolucao = dataPrevistaDevolucao;
-    }
-
-    public String getNumeroTermo() {
-        return numeroTermo;
-    }
-
-    public void setNumeroTermo(String numeroTermo) {
-        this.numeroTermo = numeroTermo;
-    }
-
-    public String getObservacao() {
-        return observacao;
-    }
-
-    public void setObservacao(String observacao) {
-        this.observacao = observacao;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public Equipamento getEquipamento() { return equipamento; }
+    public void setEquipamento(Equipamento equipamento) { this.equipamento = equipamento; }
+    public Responsavel getResponsavel() { return responsavel; }
+    public void setResponsavel(Responsavel responsavel) { this.responsavel = responsavel; }
+    public LocalDate getDataRetirada() { return dataRetirada; }
+    public void setDataRetirada(LocalDate dataRetirada) { this.dataRetirada = dataRetirada; }
+    public LocalDate getDataDevolucao() { return dataDevolucao; }
+    public void setDataDevolucao(LocalDate dataDevolucao) { this.dataDevolucao = dataDevolucao; }
+    public LocalDate getDataPrevistaDevolucao() { return dataPrevistaDevolucao; }
+    public void setDataPrevistaDevolucao(LocalDate dataPrevistaDevolucao) { this.dataPrevistaDevolucao = dataPrevistaDevolucao; }
+    public String getNumeroTermo() { return numeroTermo; }
+    public void setNumeroTermo(String numeroTermo) { this.numeroTermo = numeroTermo; }
+    public String getObservacao() { return observacao; }
+    public void setObservacao(String observacao) { this.observacao = observacao; }
+    public int getQuantidadeProrrogacoes() { return quantidadeProrrogacoes; }
+    public void setQuantidadeProrrogacoes(int quantidadeProrrogacoes) { this.quantidadeProrrogacoes = quantidadeProrrogacoes; }
+    public boolean isDevolvidoComAvaria() { return devolvidoComAvaria; }
+    public void setDevolvidoComAvaria(boolean devolvidoComAvaria) { this.devolvidoComAvaria = devolvidoComAvaria; }
 
     public boolean isAtiva() {
         return dataDevolucao == null;
@@ -110,5 +74,9 @@ public class Movimentacao {
         return isAtiva()
                 && dataPrevistaDevolucao != null
                 && LocalDate.now().isAfter(dataPrevistaDevolucao);
+    }
+
+    public boolean podeProrrogar() {
+        return isAtiva() && quantidadeProrrogacoes < MAX_PRORROGACOES;
     }
 }

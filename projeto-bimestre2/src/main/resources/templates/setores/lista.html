@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/layout :: head('Setores Administrativos')}"></head>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Secretarias e Setores Administrativos')}"></head>
 <body>
 
 <aside th:replace="~{fragments/layout :: sidebar('setores')}"></aside>
 
 <div class="app-main">
-    <header th:replace="~{fragments/layout :: topbar('Setores')}"></header>
+    <header th:replace="~{fragments/layout :: topbar('Secretarias e Setores')}"></header>
 
     <main class="app-content">
         <div th:replace="~{fragments/layout :: alertas}"></div>
@@ -14,15 +14,15 @@
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
             <div>
                 <div class="eyebrow-label">ESTRUTURA ORGANIZACIONAL</div>
-                <h1 class="page-title">Setores e Unidades Administrativas</h1>
-                <p class="page-subtitle">Cadastre os departamentos e secretarias do órgão para controle de cautelas e relatórios.</p>
+                <h1 class="page-title">Secretarias e Unidades Administrativas</h1>
+                <p class="page-subtitle">Cadastre as secretarias, gerencie abertura de inventário setorial e departamentos vinculados.</p>
             </div>
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2" sec:authorize="hasAnyRole('MANAGER', 'ADMIN', 'SECRETARIA')">
                 <a th:href="@{/responsaveis/novo}" class="btn-figma-outline">
                     <i class="bi bi-person-plus"></i> Novo responsável
                 </a>
                 <a th:href="@{/setores/novo}" class="btn-figma-primary">
-                    <i class="bi bi-plus-lg"></i> Incluir setor
+                    <i class="bi bi-plus-lg"></i> Incluir secretaria / setor
                 </a>
             </div>
         </div>
@@ -33,33 +33,60 @@
                     <thead>
                     <tr>
                         <th>SIGLA</th>
-                        <th>NOME DO SETOR / SECRETARIA</th>
+                        <th>TIPO / HIERARQUIA</th>
+                        <th>NOME OFICIAL</th>
+                        <th>INVENTÁRIO</th>
                         <th>LOCALIZAÇÃO FÍSICA</th>
-                        <th>RAMAL</th>
                         <th class="text-end">AÇÕES</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:if="${#lists.isEmpty(setores)}">
-                        <td colspan="5" class="text-center py-5 text-muted">Nenhum setor cadastrado.</td>
+                        <td colspan="6" class="text-center py-5 text-muted">Nenhuma secretaria ou setor cadastrado.</td>
                     </tr>
                     <tr th:each="setor : ${setores}">
                         <td><span class="badge bg-primary-subtle text-primary fw-bold px-2 py-1" th:text="${setor.sigla}">SECADM</span></td>
+                        <td>
+                            <span class="badge bg-light text-dark border" th:text="${setor.tipoUnidade}">SECRETARIA</span>
+                            <div th:if="${setor.secretariaPai != null}" class="small text-muted mt-1">
+                                Vinculado a: <strong th:text="${setor.secretariaPai.sigla}">SECADM</strong>
+                            </div>
+                        </td>
                         <td class="fw-semibold text-dark" th:text="${setor.nome}">Secretaria de Administração</td>
+                        <td>
+                            <span th:if="${setor.inventarioAberto}" class="badge rounded-pill bg-warning-subtle text-warning fw-semibold">
+                                <i class="bi bi-lock-fill me-1"></i>Inventário Aberto
+                            </span>
+                            <span th:if="${!setor.inventarioAberto}" class="badge rounded-pill bg-success-subtle text-success fw-semibold">
+                                Operação Normal
+                            </span>
+                        </td>
                         <td class="text-secondary" th:text="${setor.localizacao ?: '-'}">Bloco A</td>
-                        <td class="text-muted" th:text="${setor.ramal ?: '-'}">2101</td>
                         <td class="text-end text-nowrap">
+                            <form sec:authorize="hasAnyRole('MANAGER', 'ADMIN', 'SECRETARIA')"
+                                  th:if="${!setor.inventarioAberto}"
+                                  th:action="@{/setores/{id}/inventario/abrir(id=${setor.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-light border text-warning" title="Abrir inventário (congela transferências)">
+                                    <i class="bi bi-clipboard-check"></i>
+                                </button>
+                            </form>
+                            <form sec:authorize="hasAnyRole('MANAGER', 'ADMIN', 'SECRETARIA')"
+                                  th:if="${setor.inventarioAberto}"
+                                  th:action="@{/setores/{id}/inventario/encerrar(id=${setor.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-warning fw-semibold" title="Encerrar inventário do setor">
+                                    <i class="bi bi-unlock"></i> Encerrar Inv.
+                                </button>
+                            </form>
                             <a th:href="@{/relatorios(setorId=${setor.id})}" class="btn btn-sm btn-light border text-dark" title="Relatório deste setor">
-                                <i class="bi bi-file-earmark-text me-1"></i>Relatório
+                                <i class="bi bi-file-earmark-text"></i>
                             </a>
-                            <a th:href="@{/responsaveis/novo(setorId=${setor.id})}" class="btn btn-sm btn-light border text-success" title="Adicionar responsável neste setor">
-                                <i class="bi bi-person-plus"></i>
-                            </a>
-                            <a th:href="@{/setores/editar/{id}(id=${setor.id})}" class="btn btn-sm btn-light border text-primary" title="Editar">
+                            <a sec:authorize="hasAnyRole('MANAGER', 'ADMIN', 'SECRETARIA')"
+                               th:href="@{/setores/editar/{id}(id=${setor.id})}" class="btn btn-sm btn-light border text-primary" title="Editar">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <form th:action="@{/setores/excluir/{id}(id=${setor.id})}" method="post" class="d-inline"
-                                  onsubmit="return confirm('Deseja realmente excluir este setor?');">
+                            <form sec:authorize="hasAnyRole('MANAGER', 'ADMIN', 'SECRETARIA')"
+                                  th:action="@{/setores/excluir/{id}(id=${setor.id})}" method="post" class="d-inline"
+                                  onsubmit="return confirm('Deseja realmente excluir esta unidade?');">
                                 <button type="submit" class="btn btn-sm btn-light border text-danger" title="Excluir">
                                     <i class="bi bi-trash"></i>
                                 </button>

@@ -60,96 +60,62 @@ public class Equipamento {
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
 
+    @ManyToOne
+    @JoinColumn(name = "setor_id")
+    private Setor setor;
+
+    @Column(name = "motivo_baixa", length = 500)
+    private String motivoBaixa;
+
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    @Column(name = "data_baixa")
+    private LocalDate dataBaixa;
+
+    @Column(name = "status_divergencia_inventario", length = 40)
+    private String statusDivergenciaInventario;
+
+    @Column(name = "observacao_inventario", length = 400)
+    private String observacaoInventario;
+
     public Equipamento() {
     }
 
-    public Long getId() {
-        return id;
+    public boolean isDadosCriticosBloqueados() {
+        return this.situacao == StatusEquipamento.EMPRESTADO || this.situacao == StatusEquipamento.BAIXADO;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public String getPatrimonio() {
-        return patrimonio;
-    }
-
-    public void setPatrimonio(String patrimonio) {
-        this.patrimonio = patrimonio;
-    }
-
-    public String getMarca() {
-        return marca;
-    }
-
-    public void setMarca(String marca) {
-        this.marca = marca;
-    }
-
-    public String getModelo() {
-        return modelo;
-    }
-
-    public void setModelo(String modelo) {
-        this.modelo = modelo;
-    }
-
-    public String getNumeroSerie() {
-        return numeroSerie;
-    }
-
-    public void setNumeroSerie(String numeroSerie) {
-        this.numeroSerie = numeroSerie;
-    }
-
-    public LocalDate getDataAquisicao() {
-        return dataAquisicao;
-    }
-
-    public void setDataAquisicao(LocalDate dataAquisicao) {
-        this.dataAquisicao = dataAquisicao;
-    }
-
-    public EstadoConservacao getEstadoConservacao() {
-        return estadoConservacao;
-    }
-
-    public void setEstadoConservacao(EstadoConservacao estadoConservacao) {
-        this.estadoConservacao = estadoConservacao;
-    }
-
-    public StatusEquipamento getSituacao() {
-        return situacao;
-    }
-
-    public void setSituacao(StatusEquipamento situacao) {
-        this.situacao = situacao;
-    }
-
-    public boolean isConferidoInventario() {
-        return conferidoInventario;
-    }
-
-    public void setConferidoInventario(boolean conferidoInventario) {
-        this.conferidoInventario = conferidoInventario;
-    }
-
-    public Categoria getCategoria() {
-        return categoria;
-    }
-
-    public void setCategoria(Categoria categoria) {
-        this.categoria = categoria;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
+    public String getPatrimonio() { return patrimonio; }
+    public void setPatrimonio(String patrimonio) { this.patrimonio = patrimonio; }
+    public String getMarca() { return marca; }
+    public void setMarca(String marca) { this.marca = marca; }
+    public String getModelo() { return modelo; }
+    public void setModelo(String modelo) { this.modelo = modelo; }
+    public String getNumeroSerie() { return numeroSerie; }
+    public void setNumeroSerie(String numeroSerie) { this.numeroSerie = numeroSerie; }
+    public LocalDate getDataAquisicao() { return dataAquisicao; }
+    public void setDataAquisicao(LocalDate dataAquisicao) { this.dataAquisicao = dataAquisicao; }
+    public EstadoConservacao getEstadoConservacao() { return estadoConservacao; }
+    public void setEstadoConservacao(EstadoConservacao estadoConservacao) { this.estadoConservacao = estadoConservacao; }
+    public StatusEquipamento getSituacao() { return situacao; }
+    public void setSituacao(StatusEquipamento situacao) { this.situacao = situacao; }
+    public boolean isConferidoInventario() { return conferidoInventario; }
+    public void setConferidoInventario(boolean conferidoInventario) { this.conferidoInventario = conferidoInventario; }
+    public Categoria getCategoria() { return categoria; }
+    public void setCategoria(Categoria categoria) { this.categoria = categoria; }
+    public Setor getSetor() { return setor; }
+    public void setSetor(Setor setor) { this.setor = setor; }
+    public String getMotivoBaixa() { return motivoBaixa; }
+    public void setMotivoBaixa(String motivoBaixa) { this.motivoBaixa = motivoBaixa; }
+    public LocalDate getDataBaixa() { return dataBaixa; }
+    public void setDataBaixa(LocalDate dataBaixa) { this.dataBaixa = dataBaixa; }
+    public String getStatusDivergenciaInventario() { return statusDivergenciaInventario; }
+    public void setStatusDivergenciaInventario(String statusDivergenciaInventario) { this.statusDivergenciaInventario = statusDivergenciaInventario; }
+    public String getObservacaoInventario() { return observacaoInventario; }
+    public void setObservacaoInventario(String observacaoInventario) { this.observacaoInventario = observacaoInventario; }
 
     public String getIdentificacaoCompleta() {
         return "Tombamento #" + patrimonio + " - " + nome

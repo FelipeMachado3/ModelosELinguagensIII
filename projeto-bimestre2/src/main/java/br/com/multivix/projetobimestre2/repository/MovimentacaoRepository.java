@@ -11,7 +11,10 @@ public interface MovimentacaoRepository extends JpaRepository<Movimentacao, Long
     List<Movimentacao> findByDataDevolucaoIsNullOrderByDataPrevistaDevolucaoAsc();
     List<Movimentacao> findByResponsavelSetorIdOrderByDataRetiradaDescIdDesc(Long setorId);
     List<Movimentacao> findByResponsavelSetorIdAndDataDevolucaoIsNullOrderByDataPrevistaDevolucaoAsc(Long setorId);
+    List<Movimentacao> findByEquipamentoIdOrderByDataRetiradaDescIdDesc(Long equipamentoId);
     long countByDataDevolucaoIsNull();
     long countByDataDevolucaoIsNullAndDataPrevistaDevolucaoBefore(LocalDate dataReferencia);
     boolean existsByEquipamentoIdAndDataDevolucaoIsNull(Long equipamentoId);
+    boolean existsByResponsavelIdAndDataDevolucaoIsNull(Long responsavelId);
+    boolean existsByResponsavelIdAndDataDevolucaoIsNullAndDataPrevistaDevolucaoBefore(Long responsavelId, LocalDate dataReferencia);
 }
